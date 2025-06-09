@@ -1,0 +1,65 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { z } from "zod/v4";
+
+import db from "@/lib/db/index";
+import { emails } from "@/lib/db/schema/index";
+
+const multipartItemSchema = z.object({
+  name: z.string(),
+  data: z.instanceof(Buffer),
+  filename: z.string().optional(),
+});
+
+const extractedDataSchema = z.object({
+  email: z.string().min(1, "Email name is required"),
+  file: z.object({
+    filename: z.string().min(1, "Filename is required"),
+    data: z.instanceof(Buffer),
+  }),
+});
+
+export default defineEventHandler(async (event) => {
+  const formData = await readMultipartFormData(event);
+
+  // Validate that we have form data
+  const validatedFormData = z.array(multipartItemSchema).parse(formData);
+
+  // Extract data from the multipart form data array
+  let email = "";
+  let file: { filename?: string; data: Buffer } | null = null;
+
+  for (const item of validatedFormData) {
+    if (item.name === "email") {
+      email = item.data.toString();
+    }
+    if (item.name === "file") {
+      file = {
+        filename: item.filename,
+        data: item.data,
+      };
+    }
+  }
+
+  // Validate the extracted data with zod
+  const { email: validatedEmail, file: validatedFile } = extractedDataSchema.parse({
+    email,
+    file,
+  });
+
+  // Create uploads folder
+  const uploadsDir = join(process.cwd(), "uploads");
+  await mkdir(uploadsDir, { recursive: true });
+
+  // Save file
+  const filePath = join(uploadsDir, validatedFile.filename);
+  await writeFile(filePath, validatedFile.data);
+
+  // Save to database
+  await db.insert(emails).values({
+    filename: validatedEmail,
+    filePath,
+  });
+
+  return { success: true };
+});

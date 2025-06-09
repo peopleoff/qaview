@@ -1,0 +1,752 @@
+Delivered-To: ruslanbelyyhertz@gmail.com
+Received: by 2002:a05:7108:7e98:b0:462:23db:d28d with SMTP id ce24csp249573gdb;
+        Thu, 5 Jun 2025 06:41:38 -0700 (PDT)
+X-Forwarded-Encrypted: i=2; AJvYcCX6rTw3ZCxLI23qa8Ruosplo6L1+f799POpv6TDLcuwVnyJofQwTum0wlD/UTf2RMFF/06TS5ncYhp3Fd3qflJN@gmail.com
+X-Google-Smtp-Source: AGHT+IG0Hde2UfzUfIXzoDg8OlHmVISQ0JGmtsPmOQqWxEL3zKcgrUmhdk7pjvhUTrQZ3mL7C9n7
+X-Received: by 2002:a05:622a:4c10:b0:4a4:3924:96b9 with SMTP id d75a77b69052e-4a5a58a6edfmr112249251cf.52.1749130898458;
+        Thu, 05 Jun 2025 06:41:38 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1749130898; cv=none;
+        d=google.com; s=arc-20240605;
+        b=Crqr55psSzmd5+XGVdsIzG4Dg39IJYyqvdheeql27Kcd4vHF5XoLS/HOmmXaP1pc8H
+         DGF+hqrXVSH6sK6HbcJx8lt3g7sO2NU1PVXNomUefsl8GepYFVr4xFXpTsof2CBf77Gw
+         i+48C7Y9nNJE1UwTEQZNkimQUXAp0bFMHkKcFbadUv3B5AqfvR7tsjcjq5CAzlqqRawN
+         f+HT3bVXX1gOu61tBFnuw8zpCoIsZ7Y1ryAfN5K6Tk0uR6XYmY0ah5tFGlXD/+iTBtkw
+         JwDnHidtbP7cwsiVbVn5pFi9ekY8uqYKHsSCDB4HtwsDAM2XRNcaKEQ7MOz/GDAoFDkd
+         DLXA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=feedback-id:message-id:reply-to:mime-version:list-help:date:subject
+         :to:from:dkim-signature:dkim-signature;
+        bh=uIlj02vamUH8a7ukNC06xzFgfsQ7gtNj3wWXbtpUrTY=;
+        fh=8Crj7RVOwLYRx57+718+aLSBH/3wnxSrsjKYuep2TCM=;
+        b=f9LWsFeqMemBzSXRSJ7ScLoOpTXNXYzct348L1tZk+QwBsoLOSROlYiwxW4ZtCr9BD
+         h8taqiEpDw1ZU84M9k619ILMXJ18IGBJDSKNiWiijyW6KmAaiH/oF8x8bmP0uBq8ICXZ
+         nnYpZ0QHaEKWT9vlwgwaHfvLqmztjAsFZm3WbKVTZneLQQES1um0DoPxbescAzLDwQG5
+         dWNngzj5/QCoAIUu3vKHXFP1QpzjS2p/AV9sV/TfRx5jO/DetBMaSDuZMMLLF+CHfJVD
+         RWDj9KQn0baBUXUTchKIdXNA662rHnI/QhLbe8pmnyW85cXflH/yv1M7rRUCobFcRoMx
+         u2xg==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@emails.hertz.com header.s=200608 header.b=Np3yVXEl;
+       dkim=pass header.i=@s7.y.mc.salesforce.com header.s=fbldkim7 header.b=EdRX5X78;
+       spf=pass (google.com: domain of bounce-20_html-516102253-749169-7257663-1@bounce.emails.hertz.com designates 13.111.15.198 as permitted sender) smtp.mailfrom=bounce-20_HTML-516102253-749169-7257663-1@bounce.emails.hertz.com;
+       dmarc=pass (p=QUARANTINE sp=QUARANTINE dis=NONE) header.from=emails.hertz.com
+Return-Path: <bounce-20_HTML-516102253-749169-7257663-1@bounce.emails.hertz.com>
+Received: from mta2.emails.hertz.com (mta2.emails.hertz.com. [13.111.15.198])
+        by mx.google.com with ESMTPS id d75a77b69052e-4a5b2eef237si15843221cf.665.2025.06.05.06.41.38
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 05 Jun 2025 06:41:38 -0700 (PDT)
+Received-SPF: pass (google.com: domain of bounce-20_html-516102253-749169-7257663-1@bounce.emails.hertz.com designates 13.111.15.198 as permitted sender) client-ip=13.111.15.198;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@emails.hertz.com header.s=200608 header.b=Np3yVXEl;
+       dkim=pass header.i=@s7.y.mc.salesforce.com header.s=fbldkim7 header.b=EdRX5X78;
+       spf=pass (google.com: domain of bounce-20_html-516102253-749169-7257663-1@bounce.emails.hertz.com designates 13.111.15.198 as permitted sender) smtp.mailfrom=bounce-20_HTML-516102253-749169-7257663-1@bounce.emails.hertz.com;
+       dmarc=pass (p=QUARANTINE sp=QUARANTINE dis=NONE) header.from=emails.hertz.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; s=200608; d=emails.hertz.com;
+ h=From:To:Subject:Date:List-Help:MIME-Version:Reply-To:Message-ID:Content-Type;
+ i=reservations@emails.hertz.com;
+ bh=uIlj02vamUH8a7ukNC06xzFgfsQ7gtNj3wWXbtpUrTY=;
+ b=Np3yVXEl6z1S1/DtDIrf/LJQOnDaseBacWYNT+H84LIKcNPe/eLeJDeLVvGQmpmOmkUKv65eNhfv
+   xoqBw0CbrWc3Ulrz4CaPvnaZ01lAVqWYm5EWeIyBgR8ChOHksOUJC0QyD+4jvCxLOrjiP5lMLJsw
+   2yKjnPpst+BkiweXsvo=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; s=fbldkim7; d=s7.y.mc.salesforce.com;
+ h=From:To:Subject:Date:List-Help:MIME-Version:Reply-To:Message-ID:Content-Type;
+ bh=uIlj02vamUH8a7ukNC06xzFgfsQ7gtNj3wWXbtpUrTY=;
+ b=EdRX5X78JiZZ+HnhJL9MZB5lVt2Ru5uDYEuIzX1ahxe1O7InVoBhgS28YRRLXgXjNyIDrqN3DHfC
+   xvhEt/DUkkTA0aMEEqOUg/QuTHq81CievFnNorLY9ag7ZUIuoyNzZziRFv1n8F1eRWo8YF2/+O3G
+   Qo5v90xM4izv/1IdyQ+qTaL1/bPheO1eXb7Q6e3yKAa34qD5s9jSO8TciYV1RlKdGTfD9eCrh/hf
+   j5dg/NmssfR9YKNHGoExUXRYmrL+lWV/Pkujnynu909TAgJgPYtFrdQoG77wX3uLw8gK7OHABlVx
+   S6exeM8ehP+UjZwuRpWyuSSgmQDcjnmNDmPecA==
+Received: by mta2.emails.hertz.com id h86f942fmd4f; Thu, 5 Jun 2025 13:41:37 +0000 (envelope-from <bounce-20_HTML-516102253-749169-7257663-1@bounce.emails.hertz.com>)
+From: "Hertz" <reservations@emails.hertz.com>
+To: <israelpedrosa1@gmail.com>
+Subject: [Test]:Skip the line, your car is ready and waiting
+Date: Thu, 05 Jun 2025 07:41:36 -0600
+List-Help: <https://click.emails.hertz.com/subscription_center.aspx?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtaWQiOiI3MjU3NjYzIiwicyI6IjUxNjEwMjI1MyIsImxpZCI6IjIwIiwiaiI6Ijc0OTE2OSIsImpiIjoiMSIsImQiOiI3MDI0NyJ9.u1cV5u05H9RxachT0bTi_i_9uqpKA8CLZNS7slGikOU>
+MIME-Version: 1.0
+Reply-To: "Hertz" <reply-febb13747c650274-20_HTML-516102253-7257663-1@emails.hertz.com>
+X-SFMC-Stack: 7
+x-job: 7257663_749169
+Message-ID: <997d3a85-89b6-4527-bafd-629ee6cd950d@atl1s07mta2367.xt.local>
+Feedback-ID: 7257663:749169:13.111.15.198:sfmktgcld
+Content-Type: multipart/alternative;
+	boundary="LFKAg5t8yzyG=_?:"
+
+This is a multi-part message in MIME format.
+
+--LFKAg5t8yzyG=_?:
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+Trouble Viewing?
+https://view.emails.hertz.com/?qs=908480bf75b02d94e94bc044d9fe76f147dd2758162bc65483a3ee2926e2d97058412be7ccda87902620b78b55d2b5a92e06632b7b65dc805367a676700044eff40005e35eef4d42ccc4f439cf9e0d02 
+
+
+ View in Browser
+
+  
+
+https://click.emails.hertz.com/?qs=9b10d9f34c8ae8b27afbfd7f71f7f61a1dc7ff888cf66431575767ddc7966410aa952430732ff6d2d293302e15611a84995ee0d7f9f4cdc7 
+ 
+
+ CONFIRMATION
+
+ 
+
+ 
+L2204431459
+ 
+
+
+ Skip the line, your car is ready and waiting.
+ 
+
+Proceed to
+Gold Zone
+
+Choose from any car in the zone.
+
+
+ Pickup Instructions
+ 
+
+
+ Skip the line & follow signs to the Hertz lot
+ 
+
+
+ Choose any car from the listed zone above
+ 
+
+
+ Keys are inside the car, get in and go
+ 
+
+https://click.emails.hertz.com/?qs=9b10d9f34c8ae8b27afbfd7f71f7f61a1dc7ff888cf66431575767ddc7966410aa952430732ff6d2d293302e15611a84995ee0d7f9f4cdc7 
+
+Get the Hertz app for:
+https://click.emails.hertz.com/?qs=9b10d9f34c8ae8b26795e5ea2e6e877234c96ac0d21a82f11211389efe51c303cd96eddf4b80797757ed4d38c097742f12b1bc60a0138425 
+iPhone 
+https://click.emails.hertz.com/?qs=9b10d9f34c8ae8b22725e9cf2c555a8299006fdc7bd2601e5cd8aa02a4f75b92d67c8cdd9733d4d5145db39c568b8bbb8c36acc7f548f07d 
+Android 
+
+https://click.emails.hertz.com/?qs=9b10d9f34c8ae8b25e14868d04032626d81886a3ab3fb3d7ac01642485087870680acd0dfd619195b738fa5c7982bc92e0cc5f118faa8aff 
+
+https://click.emails.hertz.com/?qs=9b10d9f34c8ae8b27a30bd2a029c4a1f6bceb3174850c35307350ec2b517378f73b80c524b6cfa809963aeaca05ccd4f401caaa1904360b6 
+
+https://click.emails.hertz.com/?qs=9b10d9f34c8ae8b2f742256256c2c0f640ea127b9b14d13be5a1e9bfa49e8c9216ae8ea03b7069a69860b92372767f06e7d1232f1c5d08b1 
+
+https://click.emails.hertz.com/?qs=9b10d9f34c8ae8b2cebc625bd5cedb86171174e6a7c69c44c177c86ff1a5910a1ed54d949b190304334a795e4eafbdeb81d3e608a5ccbc85 
+
+This electronic-mail message contains confidential information intended only for the use of the individual or entity named. If the reader of this message is not the intended recipient, the reader is hereby notified that any dissemination, distribution, copying or other use of this message is strictly prohibited and is hereby instructed to return or destroy this copy of this message.
+(R)Reg. U.S. Pat. Off. (c)2025 The Hertz Corporation. All Rights Reserved.
+ 
+
+ 8501&#8203; Williams Road&#8203;
+ 
+
+ Estero&#8203;, FL 33928&#8203; U.S.A
+ 
+
+
+
+--LFKAg5t8yzyG=_?:
+Content-Type: text/html;
+	charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+<!-- -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"       xmlns:o="urn:schemas-microsoft-com:office:office">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="text/html; charset=UTF-8">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,700;1,400;1,600&display=swap');
+    </style>
+    <style type="text/css"> 
+      .@media only screen and (min-width: 481px){
+        .deskTop-hidden{
+          display: none !important;
+        }
+        .container {
+          padding: 24px !important;
+        }
+        td.Successful {
+          text-decoration: none;
+          border-radius: 15px;
+          background-color: #EBF9F5 !important;
+          padding: 10px 0px 10px 190px !important;
+        }
+        td.warning {
+          text-decoration: none;
+          border-radius: 15px;
+          background-color: #FFF9ED !important;
+          padding: 10px 0px 10px 160px !important;
+        }
+        .check-mark{
+          padding-left: 0px;
+        }
+        .Alert {
+          padding-left: 0px;
+        }
+        .envelope {
+          padding-left: 0px;
+        }
+        a.btn {
+          text-decoration: none;
+          color: #FFFFFF;
+          border-radius: 35px;
+          background-color: #000000;
+        }
+        a.check-in {
+          text-decoration: none;
+          color: #FFFFFF;
+          border-radius: 35px;
+          background-color: #000000;
+        }
+        a.btn-pickup {
+          text-decoration: none;
+          color: #FFFFFF;
+          border-radius: 35px;
+          background-color: #000000;
+        }
+        .link {
+          background-color: #007BC3;
+        }
+      }
+      @media only screen and (max-width: 480px) {
+        .mobile-hidden {
+          display: none !important;
+        }
+        .mobileApp{
+        }
+        .mobileDENLable{
+          width: 50% !important;
+          padding-bottom: 20px !important;
+        }
+        .container {
+          padding: 24px !important;
+        }
+        .padding-bottom {
+          padding-bottom: 16px;
+        }
+        td.Successful {
+          text-decoration: none;
+          border-radius: 15px;
+          background-color: #EBF9F5 !important;
+          padding: 10px 0px 10px 0px !important;
+        }
+        td.warning {
+          text-decoration: none;
+          border-radius: 15px;
+          background-color: #FFF9ED !important;
+          padding: 10px 0px 10px 0px !important;
+        }
+        td.choose {
+          text-decoration: none;
+          border-radius: 15px;
+          background-color: #F2F8FC !important;
+          padding: 10px 0px 10px 0px !important;
+        }
+        td.btn-structure {
+          text-decoration: none;
+          border-radius: 15px;
+          background-color: #007ac3 !important;
+          padding: 10px 0px 10px 0px !important;
+        }
+        a.btn {
+          text-decoration: none;
+          color: #FFFFFF;
+          border-radius: 35px;
+          background-color: #000000;
+        }
+        a.btn-pickup {
+          text-decoration: none;
+          color: #FFFFFF;
+          border-radius: 35px;
+          background-color: #000000;
+        }
+        a.check-in {
+          text-decoration: none;
+          color: #FFFFFF;
+          border-radius: 35px;
+          background-color: #000000;
+        }
+        .link {
+          background-color: #007BC3;
+        }
+        td.check-padding {
+          padding-left: 40px !important;
+        }
+        td.Alert-padding {
+          padding-left: 5px !important;
+        }
+        td.envelope-padding {
+          padding-left: 60px !important;
+        }
+        .check-mark {
+          width: 20px !important;
+          float: right;
+          padding-left: 0px;
+        }
+        .Alert {
+          width: 20px !important;
+          float: right;
+          padding-left: 0px;
+        }
+        .envelope {
+          width: 20px !important;
+          float: right;
+          padding-left: 0px;
+        }
+        .mobile-hidden {
+          display: none !important;
+        }
+        .noLTRTPadding {
+          padding-left: 0px !important;
+          padding-right: 0px !important;
+        }
+        .noPadding {
+          padding: 0px !important;
+        }
+        .responsive-td {
+          width: 100% !important;
+          display: block !important;
+        }
+        .number-img-size {
+          width: 14px !important;
+          padding-top: 0px !important;
+        }
+        .three {
+          padding-bottom: 23px !important;
+        }
+        .mobile-extend {
+          width: 100% !important;
+        }
+        .Footer-Logo {
+          width: 100px;
+          padding: 0px;
+        }
+        .mobileFontSize-77px {
+          font-size: 77px !important;
+        }
+        .mobileFontSize-22px {
+          font-size: 22px !important;
+        }
+        .mobileFontSize-24px {
+          font-size: 24px !important;
+        }
+        .mobileFontSize-20px {
+          font-size: 20px !important;
+        }
+        .mobileFontSize-38px {
+          font-size: 38px !important;
+        }
+        .mobileFontSize-18px {
+          font-size: 18px !important;
+        }
+        .mobileFontSize-11px {
+          font-size: 11px !important;
+        }
+        .mobileFontSize-16px {
+          font-size: 16px !important;
+        }
+        .mobileFontSize-12px {
+          font-size: 12px !important;
+        }
+        .mobileFontSize-14px {
+          font-size: 14px !important;
+        }
+        .mobileFontSize-15px {
+          font-size: 15px !important;
+        }
+        .mobileLineHeight-18px {
+          line-height: 18px !important;
+        }
+      }
+    </style>
+  </head>
+  <body bgcolor="#ffffff" text="#000000" style="background-color: #F5F5F5; color: #000000; padding: 0px; -webkit-text-size-adjust:none; font-size: 16px; font-family:arial,helvetica,sans-serif;"><style type="text/css">
+div.preheader 
+{ display: none !important; } 
+</style>
+<div class="preheader" style="font-size: 1px; display: none !important;">Proceed to the Gold Zone in the Hertz lot</div>
+    <img src="https://beacon.krxd.net/1x1_usermatch.gif?partner=L8Pijb6F_sfmc_7257663_sha256&partner_uid=96a6010826b43a798b472924f743f77df3b1edeadbe29468c08df1812ac37897" width=0 height=0 style="display:none" /> 
+<img src="https://beacon.krxd.net/1x1_usermatch.gif?partner=L8Pijb6F_sfmc_7257663_subid&partner_uid=516102253" width=0 height=0 style="display:none" /> 
+<img src="https://beacon.krxd.net/1x1_ad_impression.gif?confid=s6iu815js&advertiserid=7257663&campaignid=H_OneClickEnroll_STL" width=0 height=0 style="display:none;" />
+    <img src="https://click.emails.hertz.com/open.aspx?ffcb10-febb13747c650274-fe2416717d6604757c1277-fe8b13727063027b76-ff9d1670-fe3611717365047f771173-ffce15&d=70247&bmt=0" width="1" height="1" alt="">
+    <img alt="Confirmation" width="1" height="1" border="0" style="display: none;"          src="https://438-ct.c3tag.com/c3metrics-438.js?c3_type=2&c3_transaction=L2204431459&account_id=L2204431459" />
+    <div align="center">
+      <table class="stylingblock-content-wrapper" cellspacing="0" cellpadding="0" background="#F5F5F5" role="presentation" style="background-color: #F5F5F5; width:100%; min-width: 100%;">
+        <tr>
+          <td>
+            <table style="border-spacing:0;font-family: 'Open Sans', Arial, sans-serif; color:#58595b;width:100%;font-size: 16px;text-align:left;">
+              <tr>
+                <td align="center">
+                  <table class="mobile-table" cellpadding="0" cellspacing="0" align="center" style="width: 100%; max-width: 700px;">
+                    <tr>
+                      <td class="dark-mode-bg" align="center">
+                        <table cellspacing="0" cellpadding="0" align="right" width="100%">
+                          <tr align="right">
+                            <td class="dark-mode-bg" align="center">
+                              <table cellspacing="0" cellpadding="0" border="0" align="center" style="width: 100%;">
+                                <tr>
+                                  <td class="dark-mode-bg" align="center" class="mobile-hidden" style="padding-bottom: 20px;">
+                                    <table cellspacing="0" cellpadding="0" width="100%">
+                                      <tr>
+                                        <td class="dark-mode-bg" align="right">
+                                          <span class="dark-mode-text" style="font-family: 'Ride', Arial, Helvetica, sans-serif; font-size: 11px;">Trouble Viewing?</span>
+                                          <span class="dark-mode-text"  style="font-family: 'Ride', Arial, Helvetica, sans-serif; font-size: 11px;"><a  href="https://view.emails.hertz.com/?qs=908480bf75b02d94e94bc044d9fe76f147dd2758162bc65483a3ee2926e2d97058412be7ccda87902620b78b55d2b5a92e06632b7b65dc80ee98816e90f29008077983e38c59dd7113f327c8fee1043e" title="View in Browser" style="color: #434244; text-decoration: underline; font-weight: bold;">
+
+                                            View in Browser
+
+                                            </a></span>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>                        
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="dark-mode-bg" style="width: 100%; padding-left: 15px; padding-top: 10px; padding-right: 15px;">
+                        <table cellspacing="0" cellpadding="0" border="0" align="center" style="width: 100%;">
+                          <!-- HEADER -->
+                          <tr>
+                            <td class="dark-mode-bg header" style="padding-bottom: 20px;">
+                              <table cellspacing="0" cellpadding="0" class="no-pad" style="border-collapse: collapse; width: 100%;">
+                                <tr>
+                                  <!-- HERTZ LOGO -->
+                                  <td class="" align="left" style="padding-bottom: 0px;">
+                                    <a  title="Hertz" href="https://click.emails.hertz.com/?qs=9b10d9f34c8ae8b2ab48058cb7021eef19930493e44b6aa8c1651aa39dd94391bfa0e1339b959f8bd9c43f81e3278908b8d7ca1674a13ce5" target="_blank">
+                                      <img src="http://image.emails.hertz.com/lib/fe8e1372736d057876/m/1/3669fa11-b344-4c62-b7f2-62dc4f0ecd6f.png" alt="Hertz" height="auto" width="115" style="border: none; display: block; outline: 0;">
+                                    </a>
+                                  </td>
+                                  <!--HEADER.R INFO -->
+                                  <td class="dark-mode-bg" align="right">
+                                    <table cellspacing="0" cellpadding="0" class="no-pad" style="border-collapse: collapse;">
+                                      <tr>
+                                        <td class="dark-mode-bg" align="right" style="text-align: right;">
+                                          <table cellspacing="0" cellpadding="0" class="no-pad" style="border-collapse: collapse;">
+                                            <tr>
+                                              <td align="right" class="dark-mode-bg mobileFontSize-12px" style="padding-bottom: 2px; text-align: right; color: #808285; font-family: 'Open Sans', Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold; text-transform: uppercase;">
+                                                <span class="dark-mode-text mobileFontSize-12px">                                           
+
+                                                  CONFIRMATION
+
+                                                </span>
+                                              </td>
+                                            </tr>
+                                            <tr>
+                                              <td class="dark-mode-bg mobileFontSize-18px" align="right" style="text-align: right; color: #434244; font-family: 'Open Sans', Arial, Helvetica, sans-serif; font-size: 18px; font-weight: bold; text-decoration: none;">
+                                                <span class="dark-mode-text mobileFontSize-18px" style="text-align: right; color: #434244; font-family: 'Open Sans', Arial, Helvetica, sans-serif; font-size: 18px; font-weight: bold; text-decoration: none;">
+                                                  <a class="mobileFontSize-18px" target="_blank" href="" alias="topResNumber" style="text-decoration: none; color:#000000;"><b>L2204431459
+                                                    </b></a>
+                                                </span>
+                                              </td>
+                                            </tr>
+                                          </table>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                          <!-- HEADER END -->
+                        </table>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td align="center" style="border-top: 3px solid #FFCC00;">
+                        <table cellpadding="0" cellspacing="0" align="center" style="width: 100%; max-width: 700px;">
+                          <tr align="center" style="">
+                            <td style="padding-bottom: 0px">
+                              <table cellpadding="0" cellspacing="0" bgcolor="#FFFFFF" style="background-color: #FFFFFF; width: 100%;">
+                                <tr>
+                                  <td width="100%" class="container content-sub" style="padding: 24px;">
+                                    <table cellspacing="0" cellpadding="0" width="100%;" style="width: 100% !important;min-width: 100% !important;">
+                                      <tr>
+                                        <td class="responsive-td " valign="top" style="padding-right: 0px; padding-bottom: 0px; width: 100% !important;min-width: 100% !important;">
+                                          <table class="" cellpadding="0" cellspacing="0" style="width: 100% !important;min-width: 100% !important;">
+                                            <tr>
+                                              <td style="padding-bottom: 16px;">
+                                                <span class="mobileFontSize-24px" style="color: #434244; font-family: 'Open Sans', Arial, Helvetica, sans-serif; font-weight:bold; font-size: 24px; padding-bottom: 16px;">
+                                                  Skip the line, your car is ready and waiting.
+                                                </span>
+                                              </td>
+                                            </tr>
+                                          </table>
+                                        </td>
+                                      </tr>
+                                    </table>
+
+                                    <table width="100%" style="padding: 0px; width: 100%;">
+                                      <tr>
+                                        <td align="center" style="padding-bottom: 16px; padding-top: 0px; text-decoration: none; width: 100%;" >
+                                          <table border="0" cellspacing="0" cellpadding="0" width="100%" style="text-decoration: none;">
+                                            <tr>
+                                              <td align="center" class="responsive-td" style="background-color: #EBF9F5; border-radius: 8px 8px 0px 0px ; text-decoration: none; padding-top: 16px; width: 100%; border: 2px solid #036248;">
+                                                <span class="mobileFontSize-18px" style="color: #036248; font-family: 'Open Sans', Arial, Helvetica, sans-serif; font-weight: bold; font-size: 18px;">Proceed to<br></span>
+                                                <span class="mobileFontSize-28px" style="color: #036248; font-family: 'Open Sans', Arial, Helvetica, sans-serif; font-weight: bold; font-size: 28px;">Gold Zone</span>
+                                              </td>
+                                            </tr>
+                                          </table>
+                                          <table border="0" cellspacing="0" cellpadding="0" width="100%" style="text-decoration: none;">
+                                            <tr>
+                                              <td align="center" class="responsive-td" style="border-radius: 0px 0px 8px 8px ; text-decoration: none; padding-top: 16px; width: 100%; border-bottom: 2px solid #D7D9D9; border-right: 2px solid #D7D9D9; border-left: 2px solid #D7D9D9;">
+
+                                                <table cellpadding="0" cellspacing="0" width="100%">
+                                                  <tr>
+                                                    <td align="center">
+                                                      <img src="https://image.emails.hertz.com/lib/fe8b13727063027b76/m/1/41bdae50-49de-4d26-b941-ce11e814b182.png" atl="variety of cars" width="100%" height="auto" >
+                                                    </td>
+                                                  </tr>
+                                                  <tr>
+                                                    <td align="center" style="padding-bottom: 20px;">
+                                                      <table>
+                                                        <tr>
+                                                          <td valign="middle" style="padding-bottom: 5px;">
+                                                            <img src="https://image.emails.hertz.com/lib/fe8b13727063027b76/m/1/2b463e14-9224-4356-a6c0-7b4b543d467c.png" atl="checkmark" width="100%" height="auto" >
+                                                          </td>
+                                                          <td valign="middle">
+                                                            <span class="mobileFontSize-16px" style="color: #45484A; font-family: 'Open Sans', Arial, Helvetica, sans-serif; font-weight: normal; font-size: 18px;">Choose from <b>any </b>car in the zone.<br></span>
+                                                          </td>
+                                                        </tr>                                                        
+                                                      </table>
+                                                    </td>
+                                                  </tr>
+                                                </table>
+                                              </td>
+                                            </tr>
+                                          </table>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                    <table cellspacing="0" cellpadding="0" width="100%;" style="width: 100%;">
+                                      <tr>
+                                        <td class="responsive-td" valign="top" style="padding-right: 0px; padding-bottom: 0px; width: 100% !important;min-width: 100% !important;">
+                                          <table class="" cellpadding="0" cellspacing="0" style="width: 100% !important;min-width: 100% !important;">
+                                            <tr>
+                                              <td style="padding-bottom: 16px;">
+                                                <span class="mobileFontSize-24px" style="color: #434244; font-family: 'Open Sans', Arial, Helvetica, sans-serif; font-weight:bold; font-size: 24px; padding-bottom: 16px;">
+                                                  Pickup Instructions
+                                                </span>
+                                              </td>
+                                            </tr>
+                                          </table>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                    <table cellspacing="0" cellpadding="0" width="100%;" style="width: 100% !important;min-width: 100% !important;">
+                                      <tr>
+                                        <td class="responsive-td padding-bottom" valign="top" style="padding-right: 0px; padding-bottom: 10px; width: 100% !important;min-width: 100% !important;">
+                                          <table class="" cellpadding="0" cellspacing="0" style="width: 100%;" height="20px">
+                                            <tr>
+                                              <td class="number-img-size" width="14px" style="padding-right: 10px; width: 14px;">
+                                                <img src="https://image.emails.hertz.com/lib/fe8b13727063027b76/m/1/5c6d007d-2b24-49ec-b42a-7fd49bbe773c.png" alt="one" width="14px" style="width: 14px; border: none; display: inline-block; outline: 0;">
+                                              </td>
+                                              <td class="mobileFontSize-14px" style="color: #434244; font-family: 'Open Sans', Arial, Helvetica, sans-serif; font-size: 16px;">
+                                                Skip the line & follow signs to the Hertz lot
+                                              </td>
+                                            </tr>
+                                          </table>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                    <table cellspacing="0" cellpadding="0" width="100%" style="width: 100% !important;min-width: 100% !important;">
+                                      <tr>
+                                        <td class="responsive-td padding-bottom" valign="top" style="padding-right: 0px; padding-bottom: 10px; width: 100% !important;min-width: 100% !important;">
+                                          <table class="" cellpadding="0" cellspacing="0" style="width: 100%;" height="20px">
+                                            <tr>
+                                              <td class="number-img-size" width="14px" style="padding-right: 10px; width: 14px;">
+                                                <img src="https://image.emails.hertz.com/lib/fe8b13727063027b76/m/1/24a64269-3551-4385-974f-07020dc0852b.png" alt="two" width="14px" style="border: none; display: inline-block; outline: 0;">
+                                              </td>
+                                              <td class="mobileFontSize-14px" style="color: #434244; font-family: 'Open Sans', Arial, Helvetica, sans-serif; font-size: 16px;">
+                                                Choose any car from the listed zone above
+                                              </td>
+                                            </tr>
+                                          </table>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                    <table cellspacing="0" cellpadding="0" width="100%" style="width: 100% !important;min-width: 100% !important;">
+                                      <tr>
+                                        <td class="responsive-td padding-bottom" valign="top" style="padding-right: 0px; padding-bottom: 10px; width: 100% !important;min-width: 100% !important;">
+                                          <table class="" cellpadding="0" cellspacing="0" style="width: 100%;" height="20px">
+                                            <tr>
+                                              <td class="number-img-size" width="14px" style="padding-right: 10px; width: 14px;">
+                                                <img src="https://image.emails.hertz.com/lib/fe8b13727063027b76/m/1/c3037c7c-24ca-4acd-9141-5c53e014aabf.png" alt="two" width="14px" style="border: none; display: inline-block; outline: 0;">
+                                              </td>
+                                              <td class="mobileFontSize-14px" style="color: #434244; font-family: 'Open Sans', Arial, Helvetica, sans-serif; font-size: 16px;">
+                                                Keys are inside the car, get in and go
+                                              </td>
+                                            </tr>
+                                          </table>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                      <td style="padding-top: 0px; padding-left: 0px; padding-right: 0px;">
+                        <table cellpadding="0" cellspacing="0" bgcolor="#FFFFFF" style="background-color: #FFFFFF; width: 100%;">
+                          <tr>
+                            <td style="padding-right: 24px; padding-left: 24px; padding-bottom: 24px; padding-top: 0px;">
+                              <table cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                  <td style="padding-bottom: 24px; border-top: 2px solid #D8DADA;">
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td align="center" style="padding-bottom: 20px; padding-top: 0px;">
+                                    <table cellpadding="0" cellspacing="0" style="width: 100%;">
+                                      <tr>
+                                        <td valign="middle" style="width: 40%; padding-right: 3px;">
+                                          <table cellpadding="0" cellspacing="0" width="100%" style="min-width: 100%;">
+                                            <tr>
+                                              <td>
+                                                <table width="100%" cellspacing="0" cellpadding="0">
+                                                  <tr>
+                                                    <td align="left">
+                                                      <a  href="https://click.emails.hertz.com/?qs=9b10d9f34c8ae8b2dfcf37b4ecbfb14cf90e6a8d4e9edce9f770e01f9d25d7ff51deafd522769d2010d18b68b76f65dc2006aeb06fbace64" target="_blank" title="Hertz" data-linkto="https://"><img data-assetid="21270" src="https://image.emails.hertz.com/lib/fe8b13727063027b76/m/4/a09aaa5c-2766-43d6-8dde-3807a694057a.png" alt="Hertz" height="25" width="75" style="display: block; padding: 0px; text-align: left; height: 25px; width: 75px; border: 0px"></a>
+                                                    </td>
+                                                  </tr>
+                                                </table>
+                                              </td>
+                                            </tr>
+                                          </table>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td align="left">
+                                    <table cellpadding="0" cellspacing="0">
+                                      <tr>
+                                        <td class="responsive-td" style="text-align: left; padding-bottom: 10px; width: 100%;">
+                                          <table cellpadding="0" cellspacing="0" align="left">
+                                            <tr>
+                                              <td style="padding-right: 10px">
+                                                <span style="font-family: 'Open Sans', Arial, Helvetica, sans-serif; font-size: 14px; color: #808285">Get the Hertz app for:</span>
+                                              </td>
+                                              <td style="padding-right: 10px">
+                                                <a  href="https://click.emails.hertz.com/?qs=9b10d9f34c8ae8b2dd98a80df1754995b69c130db8a455ceaaf89db332ef90a73406d571e7b4aad2257e002573be9e914cb2e4127c0d5802" target="_blank" rel="external" style="font-family: 'Open Sans', Arial, Helvetica, sans-serif;font-size: 14px;font-weight: bold;color: #434244;text-decoration: none;">iPhone</a>
+                                              </td>
+                                              <td style="padding-right: 10px">
+                                                <img alt="APP" src="https://image.emails.hertz.com/lib/fe8b13727063027b76/m/4/3689cca7-3086-4b3b-8dc2-ebf7ec95d7cb.png" width="12" height="38" style="display: inline-block; width: 12px; height: 38px">
+                                              </td>
+                                              <td style="padding-right: 10px">
+                                                <a  href="https://click.emails.hertz.com/?qs=9b10d9f34c8ae8b24e7bb607c1f00553694e7938018a474b2b50df752e6ac82f30d10a675ccd6520712b0bd7b2ff73e00e7684a97f1e3542" target="_blank" rel="external" style="font-family: 'Open Sans', Arial, Helvetica, sans-serif;font-size: 14px;font-weight: bold;color: #434244;text-decoration: none;">Android</a>
+                                              </td>
+                                              <td>
+                                                <img alt="APP2"src="https://image.emails.hertz.com/lib/fe8b13727063027b76/m/4/3689cca7-3086-4b3b-8dc2-ebf7ec95d7cb.png" width="12" height="38" style="display: inline-block; width: 12px; height: 38px">
+                                              </td>
+                                            </tr>
+                                          </table>
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td class="responsive-td" style="text-align: left; padding-bottom: 10px;">
+                                          <table cellpadding="0" cellspacing="0">
+                                            <tr>
+                                              <td width="25%" style="-webkit-text-size-adjust: none; padding: 0px 20px 0px 0px">
+                                                <a  title="Facebook" href="https://click.emails.hertz.com/?qs=9b10d9f34c8ae8b24855d8e257905fdd16b6ea294d9c25ea2ee6b078223fb903dcc1e452a36e4654ef33b327819a1e3f3eaee15708d6d12e" style="-webkit-text-size-adjust: none; border-radius: 3px; color: #034ea2; text-decoration: underline" target="_blank">
+                                                  <img alt="Facebook" border="0" height="26" src="https://image.emails.hertz.com/lib/fe8b13727063027b76/m/4/13745df2-328d-458a-99c8-d7e92c3af517.png" style="border: 0; display: inline-block; border: none; height: 26px; width: auto">
+                                                </a>
+                                              </td>
+                                              <td align="center" width="25%" style="-webkit-text-size-adjust: none; padding: 0px 20px 0px 0px">
+                                                <a  title="x" href="https://click.emails.hertz.com/?qs=9b10d9f34c8ae8b2739f5794ae1a4857456ec47adfd7026ed6d7822aee1696c8ce6b5c861cbf167a8e35999a726232363d8c7977e9f94ab8" style="-webkit-text-size-adjust: none; border-radius: 3px; color: #034ea2; text-decoration: underline" target="_blank">
+                                                  <img alt="" border="0" height="26" src="https://image.emails.hertz.com/lib/fe8b13727063027b76/m/1/b04e037f-217d-4a8b-8686-ac356a378508.png" style="border: 0; display: inline-block; border: none; height: 26px; width: auto">
+                                                </a>
+                                              </td>
+                                              <td align="center" width="25%" style="-webkit-text-size-adjust: none; padding: 0px 20px 0px 0px">
+                                                <a  title="Instagram" href="https://click.emails.hertz.com/?qs=9b10d9f34c8ae8b22e6bef500e26c874ee5b3d094f5e995713da1093674fff435118fb15c6e6894f0496d979b08d8d5801647f7bfe3192b6" style="-webkit-text-size-adjust: none; border-radius: 3px; color: #034ea2; text-decoration: underline" target="_blank">
+                                                  <img alt="Instagram" border="0" height="26" src="https://image.emails.hertz.com/lib/fe8b13727063027b76/m/4/c3a34fa1-d6a0-4d8a-aaf1-8ea91c83b6ef.png" style="border: 0; display: inline-block; border: none; height: 26px; width: auto">
+                                                </a>
+                                              </td>
+                                              <td align="center" width="25%" style="-webkit-text-size-adjust: none; padding: 0px 0px 0px 0px">
+                                                <a  href="https://click.emails.hertz.com/?qs=9b10d9f34c8ae8b2519c785df38481d179fe6d95d658a1e562ee00a56c2b7a28c684a7446738b08a5d8633a820eac1f8cec4edb001092c6c" style="-webkit-text-size-adjust: none; border-radius: 3px; color: #034ea2; text-decoration: underline" target="_blank">
+                                                  <img alt="Youtube" title="Youtube" border="0" height="26" src="https://image.emails.hertz.com/lib/fe8b13727063027b76/m/4/004072f2-2d01-4390-9a38-4ecd971e745c.png" style="border: 0; display: inline-block; border: none; height: 26px; width: auto">
+                                                </a>
+                                              </td>
+                                            </tr>
+                                          </table>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td style="padding-top: 24px; padding-bottom: 24px;">
+                                    <table cellpadding="0" cellspacing="0" style="width: 100%">
+                                      <tr>
+                                        <td align="left" style="padding-bottom: 0px">
+                                          <tr>
+                                            <td style="padding-bottom: 20px">
+                                              <span class="mobileFontSize-11px" style="font-family:Arial, Helvetica, sans-serif; font-size: 11px; color: #636466;">This electronic-mail message contains confidential information intended only for the use of the individual or entity named. If the reader of this message is not the intended recipient, the reader is hereby notified that any dissemination, distribution, copying or other use of this message is strictly prohibited and is hereby instructed to return or destroy this copy of this message.</span>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td style="padding-bottom: 5px">
+                                              <span class="mobileFontSize-11px" valign="top" text-align="top" style=" text-align: top; font-family:Arial, Helvetica, sans-serif; font-size: 11px; color: #636466;">&reg;</span>
+                                              <span class="mobileFontSize-11px" style="font-family:Arial, Helvetica, sans-serif; font-size: 11px; color: #636466;">Reg. U.S. Pat. Off. &copy;2025 The Hertz Corporation. All Rights Reserved.
+                                              </span>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td style="padding-bottom: 5px">
+                                              <span class="mobileFontSize-11px" style="font-family:Arial, Helvetica, sans-serif; font-size: 11px; color: #636466;">
+                                                8501&#8203; Williams Road&#8203;
+                                              </span>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td style="padding-bottom: 20px">
+                                              <span class="mobileFontSize-11px" style="font-family:Arial, Helvetica, sans-serif; font-size: 11px; color: #636466;">
+                                                Estero&#8203;, FL 33928&#8203; U.S.A
+                                              </span>
+                                            </td>
+                                          </tr>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+
+                        </table>
+                      </td>
+                    </tr>
+                    <!-- End of Footer -->
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <img src="https://click.emails.hertz.com/open.aspx?ffcb10-febb13747c650274-fe2416717d6604757c1277-fe8b13727063027b76-ff9d1670-fe3611717365047f771173-ffce15&d=70247&bmt=0" width="1" height="1" alt="">
+  </body>
+</html>
+
+--LFKAg5t8yzyG=_?:--
+
