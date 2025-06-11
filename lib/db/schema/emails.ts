@@ -3,6 +3,9 @@ import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 import { images } from "./images";
 import { links } from "./links";
+import { qaChecklist } from "./qaChecklist";
+import { qaNotes } from "./qaNotes";
+import { spellErrors } from "./spellErrors";
 
 export const emails = sqliteTable("emails", {
   id: integer().primaryKey({ autoIncrement: true }),
@@ -18,4 +21,7 @@ export const emails = sqliteTable("emails", {
 export const emailsRelations = relations(emails, ({ many }) => ({
   links: many(links),
   images: many(images),
+  spellErrors: many(spellErrors),
+  qaChecklist: many(qaChecklist),
+  qaNotes: many(qaNotes),
 }));

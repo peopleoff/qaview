@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { CreateQaNote } from "~/lib/validations";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,64 +10,60 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-type QANote = {
-  id: string;
-  text: string;
-  timestamp: number;
-};
+import {
+  createQaNoteSchema,
+} from "~/lib/validations";
 
 const props = defineProps<{
   emailId: number;
 }>();
 
-const notes = ref<QANote[]>([]);
 const newNoteText = ref("");
 const isEditing = ref(false);
 
-const storageKey = computed(() => `qa-notes-${props.emailId}`);
-
-// Load from localStorage on mount
-onMounted(() => {
-  const saved = localStorage.getItem(storageKey.value);
-  if (saved) {
-    try {
-      const savedNotes = JSON.parse(saved);
-      notes.value = savedNotes;
-    }
-    catch (e) {
-      console.error("Failed to load notes from localStorage:", e);
-    }
-  }
+const { data: notes, refresh } = useLazyAsyncData(`notes-${props.emailId}`, () => $fetch(`/api/email/${props.emailId}/qa-notes`), {
+  server: false,
 });
 
-// Save to localStorage when notes change
-watch(notes, (newNotes) => {
-  localStorage.setItem(storageKey.value, JSON.stringify(newNotes));
-}, { deep: true });
+async function addNote() {
+  try {
+    // Validate the note text before sending
+    const validatedData: CreateQaNote = createQaNoteSchema.parse({
+      text: newNoteText.value.trim(),
+    });
 
-function addNote() {
-  if (!newNoteText.value.trim()) {
-    alert("Please enter note text.");
-    return;
+    await $fetch(`/api/email/${props.emailId}/qa-notes`, {
+      method: "POST",
+      body: validatedData,
+    });
+
+    refresh();
+
+    // Reset form
+    newNoteText.value = "";
+    isEditing.value = false;
   }
-
-  const note: QANote = {
-    id: Date.now().toString(),
-    text: newNoteText.value.trim(),
-    timestamp: Date.now(),
-  };
-
-  notes.value.unshift(note); // Add to beginning of array
-
-  // Reset form
-  newNoteText.value = "";
-  isEditing.value = false;
+  catch (e) {
+    console.error("Failed to add note:", e);
+    if (e instanceof Error) {
+      alert(`Failed to add note: ${e.message}`);
+    }
+    else {
+      alert("Failed to add note. Please try again.");
+    }
+  }
 }
 
-function deleteNote(id: string) {
-  if (confirm("Are you sure you want to delete this note?")) {
-    notes.value = notes.value.filter(note => note.id !== id);
+async function deleteNote(id: number) {
+  try {
+    await $fetch(`/api/email/${props.emailId}/qa-notes/${id}`, {
+      method: "DELETE",
+    });
+    refresh();
+  }
+  catch (e) {
+    console.error("Failed to delete note:", e);
+    alert("Failed to delete note. Please try again.");
   }
 }
 
@@ -88,7 +86,7 @@ function formatTimestamp(timestamp: number): string {
             <Badge
               class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
             >
-              {{ notes.length }} {{ notes.length === 1 ? 'Note' : 'Notes' }}
+              {{ notes?.length }} {{ notes?.length === 1 ? 'Note' : 'Notes' }}
             </Badge>
             <Button
               variant="outline"
@@ -134,22 +132,29 @@ function formatTimestamp(timestamp: number): string {
       </div>
 
       <!-- Notes List -->
-      <div v-if="notes.length > 0 || isEditing" class="space-y-4">
+      <div v-if="notes && (notes.length > 0 || isEditing)" class="space-y-4">
         <div
           v-for="note in notes"
           :key="note.id"
           class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
         >
           <div class="flex items-start justify-between mb-3">
-            <span class="text-xs text-gray-500">{{ formatTimestamp(note.timestamp) }}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              class="text-red-600 hover:text-red-800 hover:bg-red-50"
-              @click="deleteNote(note.id)"
+            <span class="text-xs text-gray-500">{{ formatTimestamp(note.createdAt) }}</span>
+            <ConfirmDialog
+              title="Delete Note"
+              description="This action cannot be undone. This will permanently delete the note."
+              confirm-text="Delete"
+              @confirm="deleteNote(note.id)"
             >
-              <Icon name="lucide:trash-2" class="h-4 w-4" />
-            </Button>
+              <template #trigger>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                >
+                  <Icon name="lucide:trash-2" class="h-4 w-4" />
+                </Button>
+              </template>
+            </ConfirmDialog>
           </div>
           <div class="text-sm text-gray-700 whitespace-pre-wrap">
             {{ note.text }}

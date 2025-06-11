@@ -2,17 +2,15 @@ import { eq } from "drizzle-orm";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { chromium } from "playwright";
-import { z } from "zod";
+
+import type { EmailWithRelations } from "~/types/Email";
 
 import db from "@/lib/db/index";
 import { emails } from "@/lib/db/schema/index";
-
-const getSchema = z.object({
-  id: z.coerce.number(),
-}).parseAsync;
+import { routeParamsSchema } from "~/lib/validations";
 
 export default defineEventHandler(async (event) => {
-  const { id } = await getValidatedRouterParams(event, getSchema);
+  const { id } = await getValidatedRouterParams(event, routeParamsSchema.parseAsync);
 
   // Get email data with related links and images
   const emailData = await db.query.emails.findFirst({
@@ -20,8 +18,11 @@ export default defineEventHandler(async (event) => {
     with: {
       links: true,
       images: true,
+      spellErrors: true,
+      qaChecklist: true,
+      qaNotes: true,
     },
-  });
+  }) as EmailWithRelations | null;
 
   if (!emailData) {
     throw createError({
@@ -60,6 +61,35 @@ export default defineEventHandler(async (event) => {
     else acc.unknown++;
     return acc;
   }, { successful: 0, failed: 0, unknown: 0 });
+
+  // Generate spell check summary
+  const spellCheckSummary = {
+    totalErrors: emailData.spellErrors?.length || 0,
+    status: emailData.spellErrors?.length === 0
+      ? "Perfect"
+      : emailData.spellErrors?.length <= 5
+        ? "Good"
+        : "Needs Review",
+  };
+
+  // Generate QA checklist summary
+  const qaChecklistSummary = {
+    totalItems: emailData.qaChecklist?.length || 0,
+    completedItems: emailData.qaChecklist?.filter(item => item.completed).length || 0,
+    completionPercentage: emailData.qaChecklist?.length > 0
+      ? Math.round((emailData.qaChecklist.filter(item => item.completed).length / emailData.qaChecklist.length) * 100)
+      : 0,
+    status: emailData.qaChecklist?.length === 0
+      ? "Not Started"
+      : (emailData.qaChecklist.filter(item => item.completed).length / emailData.qaChecklist.length) === 1
+          ? "Complete"
+          : (emailData.qaChecklist.filter(item => item.completed).length / emailData.qaChecklist.length) >= 0.75
+              ? "Nearly Complete"
+              : "In Progress",
+  };
+
+  // Generate QA notes summary
+  const qaNotesCount = emailData.qaNotes?.length || 0;
 
   // Function to convert image to base64 data URL
   async function imageToDataUrl(imagePath: string): Promise<string> {
@@ -215,6 +245,48 @@ export default defineEventHandler(async (event) => {
                         </div>
                     </div>
                 </div>
+
+                <!-- Spell Check Summary -->
+                <div class="bg-gray-50 p-4 rounded mb-6">
+                    <h3 class="text-lg font-medium mb-2 text-gray-800">Spelling & Grammar</h3>
+                    <div class="space-y-1">
+                        <div><strong>Status:</strong> 
+                            <span class="${spellCheckSummary.status === "Perfect" ? "text-green-600" : spellCheckSummary.status === "Good" ? "text-yellow-600" : "text-red-600"}">
+                                ${spellCheckSummary.status}
+                            </span>
+                        </div>
+                        <div><strong>Errors Found:</strong> ${spellCheckSummary.totalErrors}</div>
+                    </div>
+                </div>
+
+                <!-- QA Status Grid -->
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <!-- QA Checklist Summary -->
+                    <div class="bg-blue-50 p-4 rounded">
+                        <h3 class="text-lg font-medium mb-2 text-gray-800">QA Checklist</h3>
+                        <div class="space-y-1">
+                            <div><strong>Status:</strong> 
+                                <span class="${qaChecklistSummary.status === "Complete" ? "text-green-600" : qaChecklistSummary.status === "Nearly Complete" ? "text-yellow-600" : qaChecklistSummary.status === "In Progress" ? "text-blue-600" : "text-gray-600"}">
+                                    ${qaChecklistSummary.status}
+                                </span>
+                            </div>
+                            <div><strong>Progress:</strong> ${qaChecklistSummary.completedItems}/${qaChecklistSummary.totalItems} items (${qaChecklistSummary.completionPercentage}%)</div>
+                        </div>
+                    </div>
+
+                    <!-- QA Notes Summary -->
+                    <div class="bg-yellow-50 p-4 rounded">
+                        <h3 class="text-lg font-medium mb-2 text-gray-800">QA Notes</h3>
+                        <div class="space-y-1">
+                            <div><strong>Total Notes:</strong> ${qaNotesCount}</div>
+                            <div><strong>Status:</strong> 
+                                <span class="${qaNotesCount === 0 ? "text-gray-600" : "text-blue-600"}">
+                                    ${qaNotesCount === 0 ? "No notes added" : `${qaNotesCount} note${qaNotesCount > 1 ? "s" : ""} documented`}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Detailed Links Analysis -->
@@ -306,6 +378,89 @@ export default defineEventHandler(async (event) => {
                         </div>
                     </div>
                 `).join("")}
+            </div>
+            `
+              : ""}
+
+            <!-- Detailed Spell Check Analysis -->
+            ${emailData.spellErrors && emailData.spellErrors.length > 0
+              ? `
+            <div class="page-break mb-8">
+                <h2 class="text-xl font-semibold mb-4 text-gray-900">Detailed Spelling & Grammar Analysis</h2>
+                ${emailData.spellErrors.map((error, index) => {
+                  const suggestions = JSON.parse(error.suggestions || "[]");
+                  return `
+                    <div class="mb-4 border border-gray-200 rounded p-4">
+                        <h3 class="text-lg font-medium text-gray-800 mb-2">Error ${index + 1}</h3>
+                        <div class="grid grid-cols-1 gap-4 text-sm">
+                            <div><strong>Misspelled Word:</strong> 
+                                <code class="bg-red-100 text-red-800 px-2 py-1 rounded">${error.word}</code>
+                            </div>
+                            <div><strong>Context:</strong> ${error.context}</div>
+                            ${suggestions.length > 0 ? `<div><strong>Suggestions:</strong> ${suggestions.join(", ")}</div>` : ""}
+                        </div>
+                    </div>
+                `;
+                }).join("")}
+            </div>
+            `
+              : ""}
+
+            <!-- QA Checklist Section -->
+            ${emailData.qaChecklist && emailData.qaChecklist.length > 0
+              ? `
+            <div class="page-break mb-8">
+                <h2 class="text-xl font-semibold mb-4 text-gray-900">QA Checklist Results</h2>
+                <div class="space-y-4">
+                    ${emailData.qaChecklist.map((item, index) => `
+                        <div class="border border-gray-200 rounded p-4 ${item.completed ? "bg-green-50" : "bg-gray-50"}">
+                            <div class="flex items-start space-x-3">
+                                <div class="flex-shrink-0 mt-1">
+                                    <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs font-medium ${item.completed ? "bg-green-500" : "bg-gray-400"}">
+                                        ${item.completed ? "✓" : index + 1}
+                                    </span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-gray-900 ${item.completed ? "line-through" : ""}">
+                                        ${item.itemText}
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        Status: <span class="${item.completed ? "text-green-600" : "text-gray-600"}">${item.completed ? "Completed" : "Pending"}</span>
+                                    </div>
+                                    ${item.note
+                                      ? `
+                                    <div class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm">
+                                        <strong>Note:</strong> ${item.note}
+                                    </div>
+                                    `
+                                      : ""}
+                                </div>
+                            </div>
+                        </div>
+                    `).join("")}
+                </div>
+            </div>
+            `
+              : ""}
+
+            <!-- QA Notes Section -->
+            ${emailData.qaNotes && emailData.qaNotes.length > 0
+              ? `
+            <div class="page-break mb-8">
+                <h2 class="text-xl font-semibold mb-4 text-gray-900">QA Notes</h2>
+                <div class="space-y-4">
+                    ${emailData.qaNotes.map((note, index) => `
+                        <div class="border border-gray-200 rounded p-4 bg-blue-50">
+                            <div class="flex items-start justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-900">Note ${index + 1}</span>
+                                <span class="text-xs text-gray-500">${new Date(note.createdAt).toLocaleString()}</span>
+                            </div>
+                            <div class="text-sm text-gray-700 whitespace-pre-wrap">
+                                ${note.text}
+                            </div>
+                        </div>
+                    `).join("")}
+                </div>
             </div>
             `
               : ""}

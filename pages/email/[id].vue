@@ -71,12 +71,11 @@ async function exportPDF() {
               >
                 {{ emailData.analyzed ? 'Analyzed' : 'Pending Analysis' }}
               </Badge>
-              <Button @click="analyzeEmail">
+              <Button v-if="!emailData.analyzed" @click="analyzeEmail">
                 Analyze
               </Button>
               <Button
-                :disabled="!emailData.analyzed || isExporting"
-                variant="outline"
+                :is-loading="isExporting"
                 @click="exportPDF"
               >
                 {{ isExporting ? 'Exporting...' : 'Export PDF' }}
@@ -87,7 +86,7 @@ async function exportPDF() {
         <CardDescription>Last updated: {{ new Date(emailData.updatedAt).toLocaleString() }}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <h3 class="text-sm font-medium text-gray-500">
               Subject
@@ -112,6 +111,14 @@ async function exportPDF() {
               {{ emailData.images.length }}
             </p>
           </div>
+          <div>
+            <h3 class="text-sm font-medium text-gray-500">
+              Spelling
+            </h3>
+            <p class="mt-1 text-lg font-medium text-primary">
+              {{ emailData.spellErrors?.length || 0 }} errors
+            </p>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -123,15 +130,17 @@ async function exportPDF() {
       <CardContent>
         <div class="flex items-center justify-center">
           <img
+            v-if="emailData.screenshotUrl"
             :src="emailData.screenshotUrl"
             alt="Email Preview"
             class="w-full h-auto"
           >
+          <div v-else>
+            <p>No screenshot available</p>
+          </div>
         </div>
       </CardContent>
     </Card>
-    <QAChecklist :email-id="Number(id)" />
-    <QANotes :email-id="Number(id)" />
     <Card>
       <CardHeader>
         <CardTitle>Links</CardTitle>
@@ -150,5 +159,16 @@ async function exportPDF() {
         <EmailTableImages :images="emailData.images" />
       </CardContent>
     </Card>
+    <Card>
+      <CardHeader>
+        <CardTitle>Spelling & Grammar</CardTitle>
+        <CardDescription>Spell Check Analysis</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <EmailTableSpellCheck :spell-errors="emailData.spellErrors || []" />
+      </CardContent>
+    </Card>
+    <QAChecklist :email-id="Number(id)" />
+    <QANotes :email-id="Number(id)" />
   </div>
 </template>

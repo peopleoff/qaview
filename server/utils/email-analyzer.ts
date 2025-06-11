@@ -3,6 +3,10 @@ import { join } from "node:path";
 import { URL } from "node:url";
 import { chromium } from "playwright";
 
+import type { SpellCheckResult } from "./spell-checker";
+
+import { checkSpelling } from "./spell-checker";
+
 // Interface for analyzed links
 type AnalyzedLink = {
   url: string;
@@ -27,6 +31,7 @@ type AnalyzedImage = {
 export type EmailAnalysisResult = {
   links: AnalyzedLink[];
   images: AnalyzedImage[];
+  spellCheck: SpellCheckResult;
   screenshots: {
     fullPage?: string;
   };
@@ -233,10 +238,14 @@ export async function analyzeEmailContent(emailId: number, html: string): Promis
       }
     }
 
+    // Perform spell check on the email content
+    const spellCheckResult = await checkSpelling(html);
+
     // Return the comprehensive analysis result
     return {
       links: analyzedLinks,
       images: analyzedImages,
+      spellCheck: spellCheckResult,
       screenshots: {
         fullPage: `/uploads/analysis/${folderName}/full-page.png`,
       },

@@ -1,18 +1,14 @@
 import { eq } from "drizzle-orm";
 import { simpleParser } from "mailparser";
 import { readFile } from "node:fs/promises";
-import { z } from "zod";
 
 import db from "@/lib/db/index";
-import { emails, images, links } from "@/lib/db/schema/index";
+import { emails, images, links, spellErrors } from "@/lib/db/schema/index";
 import { analyzeEmailContent } from "@/server/utils/email-analyzer";
-
-const getSchema = z.object({
-  id: z.coerce.number(),
-}).parseAsync;
+import { routeParamsSchema } from "~/lib/validations";
 
 export default defineEventHandler(async (event) => {
-  const { id } = await getValidatedRouterParams(event, getSchema);
+  const { id } = await getValidatedRouterParams(event, routeParamsSchema.parseAsync);
   const email = await db.select().from(emails).where(eq(emails.id, id)).limit(1);
   if (!email[0]) {
     throw createError({
@@ -39,5 +35,17 @@ export default defineEventHandler(async (event) => {
     width: (image.width && !Number.isNaN(image.width)) ? image.width : null,
     height: (image.height && !Number.isNaN(image.height)) ? image.height : null,
   })));
+
+  // Insert spell check errors
+  if (result.spellCheck.errors.length > 0) {
+    await db.insert(spellErrors).values(result.spellCheck.errors.map(error => ({
+      emailId: email[0].id,
+      word: error.word,
+      position: error.position,
+      suggestions: JSON.stringify(error.suggestions),
+      context: error.context,
+    })));
+  }
+
   return result;
 });

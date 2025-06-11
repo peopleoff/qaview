@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { CreateQaChecklistItem, QaChecklistItemId } from "~/lib/validations";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,9 +10,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  createQaChecklistItemSchema,
+  defaultChecklistItems,
+} from "~/lib/validations";
 
 type ChecklistItem = {
-  id: string;
+  id: QaChecklistItemId;
   text: string;
   completed: boolean;
   note?: string;
@@ -20,56 +26,41 @@ const props = defineProps<{
   emailId: number;
 }>();
 
-const checklistItems = ref<ChecklistItem[]>([
-  {
-    id: "figma-design",
-    text: "Does every client design match figma design",
-    completed: false,
-    note: "",
-  },
-  {
-    id: "url-validation",
-    text: "Does every url work and do they go to the expected place",
-    completed: false,
-    note: "",
-  },
-  {
-    id: "utm-parameters",
-    text: "Are UTM's populating with the expected parameters",
-    completed: false,
-    note: "",
-  },
-  {
-    id: "personalization",
-    text: "Is all personalization correct",
-    completed: false,
-    note: "",
-  },
-  {
-    id: "automation-documentation",
-    text: "Document each step of the automation and journey, what it's doing and the expected results",
-    completed: false,
-    note: "",
-  },
-  {
-    id: "developer-comments",
-    text: "Ensure that developer is documenting their work with comments",
-    completed: false,
-    note: "",
-  },
-  {
-    id: "send-log-validation",
-    text: "Validate the SMS/Email send log and ensure that confirmationNumber, SubKey, raNumber, email/SMS name/id, and brand is being logged",
-    completed: false,
-    note: "",
-  },
-  {
-    id: "documentation-screenshots",
-    text: "Document all these steps, add screenshots if applicable",
-    completed: false,
-    note: "",
-  },
-]);
+const defaultItems: ChecklistItem[] = defaultChecklistItems.map(item => ({
+  id: item.id,
+  text: item.text,
+  completed: false,
+  note: "",
+}));
+
+// Use useLazyAsyncData to fetch checklist data
+const { data: dbItems, refresh } = useLazyAsyncData(`checklist-${props.emailId}`, () => $fetch(`/api/email/${props.emailId}/qa-checklist`), {
+  server: false,
+  default: () => [],
+});
+
+// Computed property to merge default items with database items
+const checklistItems = computed<ChecklistItem[]>(() => {
+  if (!dbItems.value)
+    return [...defaultItems];
+
+  // Create a map of existing database items
+  const dbItemsMap = new Map(dbItems.value.map(item => [item.itemId, item]));
+
+  // Initialize with default items, overriding with database values if they exist
+  return defaultItems.map((defaultItem) => {
+    const dbItem = dbItemsMap.get(defaultItem.id);
+    if (dbItem) {
+      return {
+        id: dbItem.itemId,
+        text: dbItem.itemText,
+        completed: dbItem.completed,
+        note: dbItem.note || "",
+      };
+    }
+    return { ...defaultItem };
+  });
+});
 
 const completedCount = computed(() =>
   checklistItems.value.filter(item => item.completed).length,
@@ -81,34 +72,38 @@ const progressPercentage = computed(() =>
   Math.round((completedCount.value / totalCount.value) * 100),
 );
 
-const storageKey = computed(() => `qa-checklist-${props.emailId}`);
+// Save item to database
+async function saveItemToDatabase(item: ChecklistItem) {
+  try {
+    // Validate the data before sending
+    const validatedData: CreateQaChecklistItem = createQaChecklistItemSchema.parse({
+      itemId: item.id,
+      itemText: item.text,
+      completed: item.completed,
+      note: item.note || null,
+    });
 
-// Load from localStorage on mount
-onMounted(() => {
-  const saved = localStorage.getItem(storageKey.value);
-  if (saved) {
-    try {
-      const savedItems = JSON.parse(saved);
-      checklistItems.value = savedItems;
-    }
-    catch (e) {
-      console.error("Failed to load checklist from localStorage:", e);
-    }
+    await $fetch(`/api/email/${props.emailId}/qa-checklist`, {
+      method: "POST",
+      body: validatedData,
+    });
+
+    // Refresh the data after saving
+    refresh();
   }
-});
-
-// Save to localStorage when items change
-watch(checklistItems, (newItems) => {
-  localStorage.setItem(storageKey.value, JSON.stringify(newItems));
-}, { deep: true });
+  catch (e) {
+    console.error("Failed to save checklist item:", e);
+  }
+}
 
 const editingNoteId = ref<string | null>(null);
 const tempNoteText = ref("");
 
-function toggleItem(id: string) {
+async function toggleItem(id: string) {
   const item = checklistItems.value.find(item => item.id === id);
   if (item) {
     item.completed = !item.completed;
+    await saveItemToDatabase(item);
   }
 }
 
@@ -117,10 +112,11 @@ function startEditingNote(item: ChecklistItem) {
   tempNoteText.value = item.note || "";
 }
 
-function saveNote(id: string) {
+async function saveNote(id: string) {
   const item = checklistItems.value.find(item => item.id === id);
   if (item) {
     item.note = tempNoteText.value.trim();
+    await saveItemToDatabase(item);
   }
   editingNoteId.value = null;
   tempNoteText.value = "";
@@ -131,24 +127,27 @@ function cancelNote() {
   tempNoteText.value = "";
 }
 
-function deleteNote(id: string) {
+async function deleteNote(id: string) {
   const item = checklistItems.value.find(item => item.id === id);
   if (item) {
     item.note = "";
+    await saveItemToDatabase(item);
   }
 }
 
-function resetChecklist() {
-  checklistItems.value.forEach((item) => {
+async function resetChecklist() {
+  for (const item of checklistItems.value) {
     item.completed = false;
     item.note = "";
-  });
+    await saveItemToDatabase(item);
+  }
 }
 
-function markAllComplete() {
-  checklistItems.value.forEach((item) => {
+async function markAllComplete() {
+  for (const item of checklistItems.value) {
     item.completed = true;
-  });
+    await saveItemToDatabase(item);
+  }
 }
 </script>
 

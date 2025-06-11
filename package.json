@@ -28,11 +28,12 @@
     "mailparser": "^3.7.3",
     "nuxt": "^3.17.4",
     "playwright": "^1.52.0",
-    "reka-ui": "^2.3.0",
+    "reka-ui": "^2.3.1",
     "shadcn-nuxt": "^2.2.0",
     "tailwind-merge": "^3.3.0",
     "tailwindcss": "^4.1.7",
     "tw-animate-css": "^1.3.3",
+    "typo-js": "^1.2.5",
     "vee-validate": "^4.15.0",
     "vue": "^3.5.15",
     "vue-router": "^4.5.1",
@@ -41,6 +42,7 @@
   "devDependencies": {
     "@antfu/eslint-config": "^4.13.2",
     "@types/mailparser": "^3.4.6",
+    "@types/typo-js": "^1.2.2",
     "drizzle-kit": "^0.31.1",
     "eslint": "^9.27.0",
     "typescript": "^5.8.3"

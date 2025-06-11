@@ -37,3 +37,41 @@ export type Image = {
   height: number | null;
   width: number | null;
 };
+
+export type SpellError = {
+  id: number;
+  emailId: number;
+  word: string;
+  position: number;
+  suggestions: string;
+  context: string;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type QaChecklist = {
+  id: number;
+  emailId: number;
+  itemId: string;
+  itemText: string;
+  completed: boolean;
+  note: string | null;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type QaNote = {
+  id: number;
+  emailId: number;
+  text: string;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type EmailWithRelations = Email & {
+  links: Link[];
+  images: Image[];
+  spellErrors: SpellError[];
+  qaChecklist: QaChecklist[];
+  qaNotes: QaNote[];
+};

@@ -1,9 +1,11 @@
+import { Buffer } from "node:buffer";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { z } from "zod/v4";
 
 import db from "@/lib/db/index";
 import { emails } from "@/lib/db/schema/index";
+import { createEmailSchema } from "~/lib/validations";
 
 const multipartItemSchema = z.object({
   name: z.string(),
@@ -55,11 +57,22 @@ export default defineEventHandler(async (event) => {
   const filePath = join(uploadsDir, validatedFile.filename);
   await writeFile(filePath, validatedFile.data);
 
-  // Save to database
-  await db.insert(emails).values({
+  // Validate email data before saving
+  const emailData = createEmailSchema.parse({
     filename: validatedEmail,
     filePath,
+    subject: null, // Will be extracted during analysis
   });
 
-  return { success: true };
+  // Save to database
+  await db.insert(emails).values({
+    filename: emailData.filename,
+    filePath: emailData.filePath,
+    subject: emailData.subject,
+  }).returning();
+
+  return {
+    success: true,
+    message: `Email "${validatedEmail}" uploaded successfully`,
+  };
 });
