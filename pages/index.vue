@@ -73,11 +73,7 @@ function formatDate(timestamp: number): string {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow
-                  v-for="email in emails"
-                  :key="email.id"
-                  class="hover:bg-muted/50"
-                >
+                <TableRow v-for="email in emails" :key="email.id" class="hover:bg-muted/50">
                   <TableCell class="font-medium underline">
                     <NuxtLink :to="`/email/${email.id}`">
                       {{ email.filename }}
@@ -105,18 +101,15 @@ function formatDate(timestamp: number): string {
               </TableBody>
             </Table>
           </div>
-          <div v-else class="text-center py-12">
-            <Icon name="lucide:inbox" class="mx-auto h-12 w-12 text-muted-foreground" />
-            <h3 class="mt-4 text-lg font-semibold">
+          <div v-else class="text-center py-4 space-y-2">
+            <Icon name="lucide:inbox" class="mx-auto size-12 text-muted-foreground" />
+            <h3 class="text-lg font-semibold">
               No emails yet
             </h3>
-            <p class="mt-2 text-muted-foreground">
+            <p class="text-muted-foreground">
               Get started by uploading your first email for analysis.
             </p>
-            <Button class="mt-4" @click="showUploadDialog = true">
-              <Icon name="lucide:plus" class="mr-2 h-4 w-4" />
-              Upload Your First Email
-            </Button>
+            <EmailNew />
           </div>
         </CardContent>
       </Card>
