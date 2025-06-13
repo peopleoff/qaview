@@ -5,6 +5,7 @@ import { images } from "./images";
 import { links } from "./links";
 import { qaChecklist } from "./qaChecklist";
 import { qaNotes } from "./qaNotes";
+import { sendlogAttachments } from "./sendlogAttachments";
 import { spellErrors } from "./spellErrors";
 
 export const emails = sqliteTable("emails", {
@@ -13,7 +14,9 @@ export const emails = sqliteTable("emails", {
   filePath: text().notNull(),
   subject: text(),
   analyzed: integer({ mode: "boolean" }).notNull().default(false),
-  screenshotUrl: text(),
+  screenshotUrl: text(), // Legacy field - kept for backward compatibility
+  screenshotDesktopUrl: text(),
+  screenshotMobileUrl: text(),
   createdAt: integer().notNull().$default(() => Date.now()),
   updatedAt: integer().notNull().$default(() => Date.now()).$onUpdate(() => Date.now()),
 });
@@ -24,4 +27,5 @@ export const emailsRelations = relations(emails, ({ many }) => ({
   spellErrors: many(spellErrors),
   qaChecklist: many(qaChecklist),
   qaNotes: many(qaNotes),
+  sendlogAttachments: many(sendlogAttachments),
 }));

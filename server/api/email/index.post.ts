@@ -4,8 +4,8 @@ import { join } from "node:path";
 import { z } from "zod/v4";
 
 import db from "@/lib/db/index";
-import { emails } from "@/lib/db/schema/index";
-import { createEmailSchema } from "~/lib/validations";
+import { emails, qaChecklist } from "@/lib/db/schema/index";
+import { createEmailSchema, defaultChecklistItems } from "~/lib/validations";
 
 const multipartItemSchema = z.object({
   name: z.string(),
@@ -50,7 +50,7 @@ export default defineEventHandler(async (event) => {
   });
 
   // Create uploads folder
-  const uploadsDir = join(process.cwd(), "uploads");
+  const uploadsDir = join(process.cwd(), "public/uploads/emails");
   await mkdir(uploadsDir, { recursive: true });
 
   // Save file
@@ -64,15 +64,27 @@ export default defineEventHandler(async (event) => {
     subject: null, // Will be extracted during analysis
   });
 
-  // Save to database
-  await db.insert(emails).values({
+  // Save to database and get the created email
+  const [newEmail] = await db.insert(emails).values({
     filename: emailData.filename,
     filePath: emailData.filePath,
     subject: emailData.subject,
   }).returning();
 
+  // Create default QA checklist items for the new email
+  const checklistItems = defaultChecklistItems.map(item => ({
+    emailId: newEmail.id,
+    itemId: item.id,
+    itemText: item.text,
+    completed: false,
+    note: null,
+  }));
+
+  await db.insert(qaChecklist).values(checklistItems);
+
   return {
     success: true,
     message: `Email "${validatedEmail}" uploaded successfully`,
+    emailId: newEmail.id,
   };
 });

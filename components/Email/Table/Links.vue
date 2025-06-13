@@ -49,7 +49,7 @@ function closeImageModal() {
           {{ link.text ? link.text : link.finalUrl }}
         </TableCell>
         <TableCell class="font-medium">
-          <Badge variant="outline" :class="(link?.status ?? 0) >= 200 && (link?.status ?? 0) < 300 ? 'bg-green-200' : 'bg-red-200'">
+          <Badge variant="outline" :class="(link?.status ?? 0) >= 200 && (link?.status ?? 0) < 300 ? 'bg-green-500' : 'bg-red-500'">
             {{ link?.status ?? 'N/A' }}
           </Badge>
         </TableCell>

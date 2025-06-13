@@ -23,7 +23,9 @@ export default defineEventHandler(async (event) => {
   await db.update(emails).set({
     analyzed: true,
     subject: parsed.subject || null,
-    screenshotUrl: result.screenshots.fullPage,
+    screenshotUrl: result.screenshots.fullPage, // Legacy compatibility
+    screenshotDesktopUrl: result.screenshots.desktop,
+    screenshotMobileUrl: result.screenshots.mobile,
   }).where(eq(emails.id, email[0].id));
   await db.insert(links).values(result.links.map(link => ({
     ...link,

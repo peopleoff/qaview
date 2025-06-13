@@ -9,14 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   Table,
   TableBody,
   TableCaption,
@@ -26,58 +18,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const { data: emails, refresh } = useAsyncData("emails", () => $fetch("/api/email"));
+const { emails, fetchEmails } = useEmails();
 
 const showUploadDialog = ref(false);
-const uploadFile = ref<File | null>(null);
-const emailName = ref("");
-const isUploading = ref(false);
 
-function handleFileChange(event: Event) {
-  const target = event.target as HTMLInputElement;
-  if (target.files && target.files[0]) {
-    uploadFile.value = target.files[0];
-    // Auto-populate email name from filename (without extension)
-    const fileName = target.files[0].name;
-    emailName.value = fileName.replace(/\.[^/.]+$/, "");
-  }
-}
-
-async function handleUpload() {
-  if (!uploadFile.value || !emailName.value.trim()) {
-    alert("Please select a file and enter an email name.");
-    return;
-  }
-
-  isUploading.value = true;
-  try {
-    const formData = new FormData();
-    formData.append("file", uploadFile.value);
-    formData.append("email", emailName.value.trim());
-
-    await $fetch("/api/email", {
-      method: "POST",
-      body: formData,
-    });
-
-    // Reset form
-    uploadFile.value = null;
-    emailName.value = "";
-    showUploadDialog.value = false;
-
-    // Refresh email list
-    await refresh();
-
-    alert("Email uploaded successfully!");
-  }
-  catch (error) {
-    console.error("Upload failed:", error);
-    alert("Failed to upload email. Please try again.");
-  }
-  finally {
-    isUploading.value = false;
-  }
-}
+// Initialize data
+await fetchEmails();
 
 function formatDate(timestamp: number): string {
   return new Date(timestamp).toLocaleDateString();
@@ -98,52 +44,6 @@ function formatDate(timestamp: number): string {
               Email quality assurance analysis tool
             </p>
           </div>
-          <Dialog v-model:open="showUploadDialog">
-            <DialogTrigger as-child>
-              <Button>
-                <Icon name="lucide:plus" class="mr-2 h-4 w-4" />
-                Upload New Email
-              </Button>
-            </DialogTrigger>
-            <DialogContent class="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Upload Email for Analysis</DialogTitle>
-                <DialogDescription>
-                  Upload an .eml file to analyze its links, images, and overall quality.
-                </DialogDescription>
-              </DialogHeader>
-              <div class="space-y-4">
-                <div>
-                  <label for="email-name" class="block text-sm font-medium mb-2">Email Name</label>
-                  <input
-                    id="email-name"
-                    v-model="emailName"
-                    type="text"
-                    placeholder="Enter email name"
-                    class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-                  >
-                </div>
-                <div>
-                  <label for="file-upload" class="block text-sm font-medium mb-2">Email File (.eml)</label>
-                  <input
-                    id="file-upload"
-                    type="file"
-                    accept=".eml"
-                    class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-                    @change="handleFileChange"
-                  >
-                </div>
-                <div class="flex justify-end space-x-2">
-                  <Button variant="outline" @click="showUploadDialog = false">
-                    Cancel
-                  </Button>
-                  <Button :disabled="isUploading" @click="handleUpload">
-                    {{ isUploading ? 'Uploading...' : 'Upload' }}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
         </div>
       </div>
     </header>
@@ -178,8 +78,10 @@ function formatDate(timestamp: number): string {
                   :key="email.id"
                   class="hover:bg-muted/50"
                 >
-                  <TableCell class="font-medium">
-                    {{ email.filename }}
+                  <TableCell class="font-medium underline">
+                    <NuxtLink :to="`/email/${email.id}`">
+                      {{ email.filename }}
+                    </NuxtLink>
                   </TableCell>
                   <TableCell>
                     {{ email.subject || 'No subject' }}

@@ -105,7 +105,7 @@ function formatTimestamp(timestamp: number): string {
     </CardHeader>
     <CardContent>
       <!-- Add Note Form -->
-      <div v-if="isEditing" class="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+      <div v-if="isEditing" class="mb-6 p-4 border border-accent rounded-lg bg-accent">
         <h3 class="text-lg font-medium mb-4">
           Add New Note
         </h3>
@@ -136,10 +136,10 @@ function formatTimestamp(timestamp: number): string {
         <div
           v-for="note in notes"
           :key="note.id"
-          class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          class="p-4 border border-accent rounded-lg hover:bg-accent transition-colors"
         >
           <div class="flex items-start justify-between mb-3">
-            <span class="text-xs text-gray-500">{{ formatTimestamp(note.createdAt) }}</span>
+            <span class="text-xs text-muted-foreground">{{ formatTimestamp(note.createdAt) }}</span>
             <ConfirmDialog
               title="Delete Note"
               description="This action cannot be undone. This will permanently delete the note."
@@ -156,7 +156,7 @@ function formatTimestamp(timestamp: number): string {
               </template>
             </ConfirmDialog>
           </div>
-          <div class="text-sm text-gray-700 whitespace-pre-wrap">
+          <div class="text-sm text-muted-foreground whitespace-pre-wrap">
             {{ note.text }}
           </div>
         </div>
@@ -164,11 +164,11 @@ function formatTimestamp(timestamp: number): string {
 
       <!-- Empty State -->
       <div v-else class="text-center py-8">
-        <Icon name="lucide:sticky-note" class="mx-auto h-12 w-12 text-gray-400" />
-        <h3 class="mt-4 text-lg font-medium text-gray-900">
+        <Icon name="lucide:sticky-note" class="mx-auto h-12 w-12 text-muted-foreground" />
+        <h3 class="mt-4 text-lg font-medium text-muted-foreground">
           No notes yet
         </h3>
-        <p class="mt-2 text-gray-500">
+        <p class="mt-2 text-muted-foreground">
           Add your first QA note to document observations and feedback.
         </p>
         <Button class="mt-4" @click="isEditing = true">

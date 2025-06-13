@@ -1,0 +1,12 @@
+<!-- Header -->
+<div class="mb-8 border-b pb-4">
+    <h1 class="text-2xl font-bold text-muted-foreground mb-2">Email QA Report</h1>
+    <div class="grid grid-cols-1 gap-4 text-muted-foreground">
+        <div>
+            <strong>Subject:</strong> {{#if emailData.subject}}{{emailData.subject}}{{else}}No subject{{/if}}
+        </div>
+        <div>
+            <strong>Analysis Date:</strong> {{formatDate emailData.updatedAt}}
+        </div>
+    </div>
+</div>

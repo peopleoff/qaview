@@ -47,7 +47,7 @@ function closeImageModal() {
         <TableCell class="font-medium">
           <Badge
             variant="outline"
-            :class="(image?.status ?? 0) >= 200 && (image?.status ?? 0) < 300 ? 'bg-green-200' : 'bg-red-200'"
+            :class="(image?.status ?? 0) >= 200 && (image?.status ?? 0) < 300 ? 'bg-green-500' : 'bg-red-500'"
           >
             {{ image?.status ?? 'N/A' }}
           </Badge>

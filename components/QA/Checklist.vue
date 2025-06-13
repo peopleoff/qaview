@@ -52,7 +52,7 @@ const checklistItems = computed<ChecklistItem[]>(() => {
     const dbItem = dbItemsMap.get(defaultItem.id);
     if (dbItem) {
       return {
-        id: dbItem.itemId,
+        id: defaultItem.id,
         text: dbItem.itemText,
         completed: dbItem.completed,
         note: dbItem.note || "",
@@ -179,7 +179,7 @@ async function markAllComplete() {
     </CardHeader>
     <CardContent>
       <!-- Progress Bar -->
-      <div class="mb-6">
+      <div>
         <div class="flex items-center justify-between text-sm text-muted-foreground mb-2">
           <span>Progress</span>
           <span>{{ progressPercentage }}%</span>
@@ -193,12 +193,12 @@ async function markAllComplete() {
       </div>
 
       <!-- Checklist Items -->
-      <div class="space-y-4">
+      <div class="space-y-4 py-4">
         <div
           v-for="item in checklistItems"
           :key="item.id"
-          class="p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-          :class="{ 'bg-green-50 border-green-200': item.completed }"
+          class="p-3 rounded-lg border border-accent hover:bg-primary/10 transition-colors"
+          :class="{ 'bg-primary/20 border-primary/50': item.completed }"
         >
           <!-- Main Item Row -->
           <div class="flex items-start space-x-3">
@@ -207,15 +207,15 @@ async function markAllComplete() {
                 :id="item.id"
                 type="checkbox"
                 :checked="item.completed"
-                class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded cursor-pointer"
+                class="h-4 w-4 text-primary focus:ring-primary border-accent rounded cursor-pointer"
                 @change="toggleItem(item.id)"
               >
             </div>
             <div class="flex-1">
               <label
                 :for="item.id"
-                class="text-sm font-medium text-gray-900 cursor-pointer"
-                :class="{ 'line-through text-gray-500': item.completed }"
+                class="text-sm font-medium text-muted-foreground cursor-pointer"
+                :class="{ 'line-through text-muted-foreground': item.completed }"
               >
                 {{ item.text }}
               </label>
@@ -240,7 +240,7 @@ async function markAllComplete() {
 
           <!-- Existing Note Display -->
           <div v-if="item.note && editingNoteId !== item.id" class="mt-3 ml-7">
-            <div class="p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-gray-700">
+            <div class="p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-muted-foreground">
               <div class="flex items-start justify-between">
                 <div class="flex-1 whitespace-pre-wrap">
                   {{ item.note }}

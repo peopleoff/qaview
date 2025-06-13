@@ -26,16 +26,12 @@ const props = defineProps<{
   spellErrors: SpellError[];
 }>();
 
-const expandedErrors = ref<Set<number>>(new Set());
+const emit = defineEmits<{
+  refresh: [];
+}>();
 
-function toggleExpanded(errorId: number) {
-  if (expandedErrors.value.has(errorId)) {
-    expandedErrors.value.delete(errorId);
-  }
-  else {
-    expandedErrors.value.add(errorId);
-  }
-}
+const deletingErrors = ref<Set<number>>(new Set());
+const addingToDict = ref<Set<number>>(new Set());
 
 function getSuggestions(suggestionsJson: string): string[] {
   try {
@@ -45,15 +41,6 @@ function getSuggestions(suggestionsJson: string): string[] {
     return [];
   }
 }
-
-function formatSuggestions(suggestions: string[]): string {
-  if (suggestions.length === 0)
-    return "No suggestions";
-  if (suggestions.length <= 3)
-    return suggestions.join(", ");
-  return `${suggestions.slice(0, 3).join(", ")} (+${suggestions.length - 3} more)`;
-}
-
 function getSpellingStats() {
   if (props.spellErrors.length === 0) {
     return { status: "Perfect", color: "bg-green-100 text-green-800" };
@@ -63,6 +50,47 @@ function getSpellingStats() {
   }
   else {
     return { status: "Needs Review", color: "bg-red-100 text-red-800" };
+  }
+}
+
+async function deleteError(errorId: number) {
+  deletingErrors.value.add(errorId);
+
+  try {
+    await $fetch(`/api/spell-error/${errorId}`, {
+      method: "DELETE",
+    });
+
+    // Emit refresh to parent to reload data
+    emit("refresh");
+  }
+  catch (error) {
+    console.error("Failed to delete spell error:", error);
+  }
+  finally {
+    deletingErrors.value.delete(errorId);
+  }
+}
+
+async function addToCustomDictionary(word: string, errorId: number) {
+  addingToDict.value.add(errorId);
+
+  try {
+    await $fetch("/api/custom-dictionary", {
+      method: "POST",
+      body: { word },
+    });
+
+    // Delete the error from the database
+    await deleteError(errorId);
+    // Emit refresh to parent to reload data
+    emit("refresh");
+  }
+  catch (error) {
+    console.error("Failed to add word to custom dictionary:", error);
+  }
+  finally {
+    addingToDict.value.delete(errorId);
   }
 }
 </script>
@@ -90,7 +118,9 @@ function getSpellingStats() {
           <TableHead>Misspelled Word</TableHead>
           <TableHead>Context</TableHead>
           <TableHead>Suggestions</TableHead>
-          <TableHead>Actions</TableHead>
+          <TableHead class="w-[120px]">
+            Actions
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -101,21 +131,15 @@ function getSpellingStats() {
             </code>
           </TableCell>
           <TableCell class="max-w-[300px]">
-            <div class="text-sm text-gray-700">
-              <span v-if="!expandedErrors.has(error.id)" class="truncate block">
-                {{ error.context }}
-              </span>
-              <span v-else class="whitespace-normal">
+            <div class="text-sm text-muted-foreground">
+              <span class="truncate block">
                 {{ error.context }}
               </span>
             </div>
           </TableCell>
           <TableCell class="max-w-[200px]">
             <div class="text-sm">
-              <span v-if="!expandedErrors.has(error.id)">
-                {{ formatSuggestions(getSuggestions(error.suggestions)) }}
-              </span>
-              <div v-else class="space-y-1">
+              <div class="space-y-1">
                 <div
                   v-for="suggestion in getSuggestions(error.suggestions)"
                   :key="suggestion"
@@ -127,17 +151,34 @@ function getSpellingStats() {
             </div>
           </TableCell>
           <TableCell>
-            <Button
-              variant="ghost"
-              size="sm"
-              class="h-8"
-              @click="toggleExpanded(error.id)"
-            >
-              <Icon
-                :name="expandedErrors.has(error.id) ? 'lucide:chevron-up' : 'lucide:chevron-down'"
-                class="h-4 w-4"
-              />
-            </Button>
+            <div class="flex items-center space-x-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                class="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                :disabled="addingToDict.has(error.id)"
+                title="Add to dictionary"
+                @click="addToCustomDictionary(error.word, error.id)"
+              >
+                <Icon
+                  :name="addingToDict.has(error.id) ? 'lucide:loader-2' : 'lucide:plus'"
+                  :class="addingToDict.has(error.id) ? 'h-4 w-4 animate-spin' : 'h-4 w-4'"
+                />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                class="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                :disabled="deletingErrors.has(error.id)"
+                title="Delete error"
+                @click="deleteError(error.id)"
+              >
+                <Icon
+                  :name="deletingErrors.has(error.id) ? 'lucide:loader-2' : 'lucide:x'"
+                  :class="deletingErrors.has(error.id) ? 'h-4 w-4 animate-spin' : 'h-4 w-4'"
+                />
+              </Button>
+            </div>
           </TableCell>
         </TableRow>
       </TableBody>
@@ -146,10 +187,10 @@ function getSpellingStats() {
     <!-- No Errors State -->
     <div v-else class="text-center py-8">
       <Icon name="lucide:check-circle" class="mx-auto h-12 w-12 text-green-500" />
-      <h3 class="mt-4 text-lg font-medium text-gray-900">
+      <h3 class="mt-4 text-lg font-medium text-muted-foreground">
         Perfect Spelling!
       </h3>
-      <p class="mt-2 text-gray-500">
+      <p class="mt-2 text-muted-foreground">
         No spelling or grammar errors were found in this email.
       </p>
     </div>

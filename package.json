@@ -24,6 +24,7 @@
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.44.2",
     "eml-parse-js": "^1.2.0-beta.0",
+    "handlebars": "^4.7.8",
     "lucide-vue-next": "^0.511.0",
     "mailparser": "^3.7.3",
     "nuxt": "^3.17.4",
@@ -41,6 +42,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.13.2",
+    "@types/handlebars": "^4.0.40",
     "@types/mailparser": "^3.4.6",
     "@types/typo-js": "^1.2.2",
     "drizzle-kit": "^0.31.1",

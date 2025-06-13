@@ -83,9 +83,18 @@ export async function analyzeEmailContent(emailId: number, html: string): Promis
     const screenshotsDir = join(process.cwd(), "/public/uploads/analysis", folderName);
     await mkdir(screenshotsDir, { recursive: true });
 
-    // Take a screenshot of the full page
-    const fullPageScreenshotPath = join(screenshotsDir, "full-page.png");
-    await page.screenshot({ path: fullPageScreenshotPath, fullPage: true });
+    // Take desktop screenshot (800px wide)
+    await page.setViewportSize({ width: 800, height: 1200 });
+    const desktopScreenshotPath = join(screenshotsDir, "desktop-screenshot.png");
+    await page.screenshot({ path: desktopScreenshotPath, fullPage: true });
+
+    // Take mobile screenshot (375px wide)
+    await page.setViewportSize({ width: 375, height: 812 });
+    const mobileScreenshotPath = join(screenshotsDir, "mobile-screenshot.png");
+    await page.screenshot({ path: mobileScreenshotPath, fullPage: true });
+
+    // Reset viewport to desktop for link analysis
+    await page.setViewportSize({ width: 800, height: 1200 });
 
     const links = await page.$$eval("a", anchors => anchors.map((anchor) => {
       const url = anchor.getAttribute("href");
@@ -93,23 +102,31 @@ export async function analyzeEmailContent(emailId: number, html: string): Promis
       return { url, title };
     }));
 
-    const images = await page.$$eval("img", images => images.map((image) => {
-      const src = image.getAttribute("src");
-      const alt = image.getAttribute("alt");
-      const width = image.getAttribute("width");
-      const height = image.getAttribute("height");
+    // Filter out images that are 1x1 or have no width or height
+    const images = await page.$$eval("img", images => images
+      .map((image) => {
+        const src = image.getAttribute("src");
+        const alt = image.getAttribute("alt");
+        const width = image.getAttribute("width");
+        const height = image.getAttribute("height");
 
-      // Parse width and height, handling NaN values
-      const parsedWidth = width ? Number.parseInt(width) : undefined;
-      const parsedHeight = height ? Number.parseInt(height) : undefined;
+        const parsedWidth = width ? Number.parseInt(width) : undefined;
+        const parsedHeight = height ? Number.parseInt(height) : undefined;
 
-      return {
-        src,
-        alt,
-        width: (parsedWidth && !Number.isNaN(parsedWidth)) ? parsedWidth : undefined,
-        height: (parsedHeight && !Number.isNaN(parsedHeight)) ? parsedHeight : undefined,
-      };
-    }));
+        return {
+          src,
+          alt,
+          width: (parsedWidth && !Number.isNaN(parsedWidth)) ? parsedWidth : undefined,
+          height: (parsedHeight && !Number.isNaN(parsedHeight)) ? parsedHeight : undefined,
+        };
+      })
+      .filter((image) => {
+        // Remove tracking pixels: images with no dimensions OR 1x1 pixels
+        const hasNoDimensions = !image.width && !image.height;
+        const is1x1 = image.width === 1 && image.height === 1;
+
+        return !(hasNoDimensions || is1x1);
+      }));
 
     // Check each link for redirects and status
     const analyzedLinks: AnalyzedLink[] = [];
@@ -247,7 +264,9 @@ export async function analyzeEmailContent(emailId: number, html: string): Promis
       images: analyzedImages,
       spellCheck: spellCheckResult,
       screenshots: {
-        fullPage: `/uploads/analysis/${folderName}/full-page.png`,
+        desktop: `/uploads/analysis/${folderName}/desktop-screenshot.png`,
+        mobile: `/uploads/analysis/${folderName}/mobile-screenshot.png`,
+        fullPage: `/uploads/analysis/${folderName}/desktop-screenshot.png`, // Legacy compatibility
       },
     };
   }
