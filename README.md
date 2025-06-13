@@ -41,16 +41,22 @@ cd qa-buddy
 npm install
 ```
 
-3. Set up the database:
+3. Set up environment variables:
 ```bash
-# Generate database migrations
-npx drizzle-kit generate
+# Copy the example environment file
+cp .env.example .env
+```
+
+4. Create data directory and set up the database:
+```bash
+# Create data directory for SQLite database
+mkdir -p data
 
 # Run migrations to create tables
 npx drizzle-kit migrate
 ```
 
-4. Start the development server:
+5. Start the development server:
 ```bash
 npm run dev
 ```
