@@ -36,24 +36,21 @@ git clone <repository-url>
 cd qa-buddy
 ```
 
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Set up environment variables:
+2. Set up environment variables:
 ```bash
 # Copy the example environment file
 cp .env.example .env
 ```
 
-4. Create data directory and set up the database:
+3. Install dependencies:
 ```bash
-# Create data directory for SQLite database
-mkdir -p data
+npm install
+```
 
-# Run migrations to create tables
-npx drizzle-kit migrate
+4. Set up the database:
+```bash
+# Run generate to create schemas and create the database
+npm run db:setup
 ```
 
 5. Start the development server:
@@ -66,14 +63,21 @@ The application will be available at `http://localhost:3000`.
 ### Database Management
 
 ```bash
+# Setup database (generate schemas and run migrations)
+npm run db:setup
+
 # Generate new migrations after schema changes
-npx drizzle-kit generate
+npm run db:generate
 
 # Apply migrations to database
-npx drizzle-kit migrate
+npm run db:migrate
 
 # Open Drizzle Studio for database inspection
-npx drizzle-kit studio
+npm run db:studio
+
+# Reset database
+# Delete data/db.sqlite then run
+npm run db:setup
 ```
 
 ## Development

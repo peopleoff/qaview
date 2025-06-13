@@ -9,7 +9,12 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint",
-    "lint:fix": "eslint --fix"
+    "lint:fix": "eslint --fix",
+    "db:setup": "npm run db:generate && npm run db:migrate",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "db:reset": "drizzle-kit push --force"
   },
   "dependencies": {
     "@libsql/client": "^0.15.8",
