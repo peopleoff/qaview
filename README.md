@@ -1,75 +1,96 @@
-# Nuxt Minimal Starter
+# QA Buddy
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+A comprehensive email quality assurance analysis tool built with Nuxt 3. QA Buddy analyzes uploaded .eml files to check links, validate images, capture screenshots, and perform spell checking to ensure email quality before deployment.
 
-## Setup
+## Features
 
-Make sure to install dependencies:
+- **Email Analysis**: Upload and parse .eml files for comprehensive QA analysis
+- **Link Validation**: Check status codes, redirects, and UTM parameters
+- **Image Validation**: Verify accessibility, dimensions, and loading performance
+- **Screenshot Capture**: Full email and individual link screenshots using Playwright
+- **QA Checklist**: Customizable checklist items for manual review
+- **Notes & Comments**: Add detailed notes during the QA process
+- **Spell Checking**: Built-in spell checker with custom dictionary support
+- **Export Reports**: Generate detailed analysis reports
 
+## Tech Stack
+
+- **Frontend**: Nuxt 3, Vue 3, TailwindCSS v4, shadcn-nuxt
+- **Backend**: Nuxt server routes, SQLite database
+- **ORM**: Drizzle ORM with migrations
+- **Analysis**: Playwright (Chromium), mailparser
+- **Validation**: Zod schemas throughout
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+ 
+- npm, pnpm, yarn, or bun
+
+### Installation
+
+1. Clone the repository:
 ```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
+git clone <repository-url>
+cd qa-buddy
 ```
 
-## Development Server
+2. Install dependencies:
+```bash
+npm install
+```
 
-Start the development server on `http://localhost:3000`:
+3. Set up the database:
+```bash
+# Generate database migrations
+npx drizzle-kit generate
+
+# Run migrations to create tables
+npx drizzle-kit migrate
+```
+
+4. Start the development server:
+```bash
+npm run dev
+```
+
+The application will be available at `http://localhost:3000`.
+
+### Database Management
 
 ```bash
-# npm
+# Generate new migrations after schema changes
+npx drizzle-kit generate
+
+# Apply migrations to database
+npx drizzle-kit migrate
+
+# Open Drizzle Studio for database inspection
+npx drizzle-kit studio
+```
+
+## Development
+
+```bash
+# Start development server
 npm run dev
 
-# pnpm
-pnpm dev
+# Run linting
+npm run lint
 
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
+# Build for production
 npm run build
 
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
+# Preview production build
 npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## Project Structure
+
+- `/components/` - Vue components including UI library
+- `/pages/` - File-based routing pages
+- `/server/api/` - API endpoints for email analysis
+- `/lib/db/` - Database schema and migrations
+- `/server/utils/` - Email analysis engine and utilities
+- `/public/uploads/` - File uploads and analysis artifacts
