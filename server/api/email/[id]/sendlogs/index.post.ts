@@ -1,6 +1,6 @@
-import { writeFile, mkdir } from "node:fs/promises";
-import { join, extname } from "node:path";
 import { eq } from "drizzle-orm";
+import { mkdir, writeFile } from "node:fs/promises";
+import { extname, join } from "node:path";
 
 import db from "@/lib/db/index";
 import { emails, sendlogAttachments } from "@/lib/db/schema/index";
@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
 
   // Handle multipart form data
   const formData = await readMultipartFormData(event);
-  
+
   if (!formData || formData.length === 0) {
     throw createError({
       statusCode: 400,

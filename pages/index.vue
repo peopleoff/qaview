@@ -20,8 +20,6 @@ import {
 
 const { emails, fetchEmails } = useEmails();
 
-const showUploadDialog = ref(false);
-
 // Initialize data
 await fetchEmails();
 
@@ -73,7 +71,11 @@ function formatDate(timestamp: number): string {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow v-for="email in emails" :key="email.id" class="hover:bg-muted/50">
+                <TableRow
+                  v-for="email in emails"
+                  :key="email.id"
+                  class="hover:bg-muted/50"
+                >
                   <TableCell class="font-medium underline">
                     <NuxtLink :to="`/email/${email.id}`">
                       {{ email.filename }}

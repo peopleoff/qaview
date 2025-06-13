@@ -1,6 +1,6 @@
+import { eq } from "drizzle-orm";
 import { unlink } from "node:fs/promises";
 import { join } from "node:path";
-import { eq } from "drizzle-orm";
 
 import db from "@/lib/db/index";
 import { sendlogAttachments } from "@/lib/db/schema/index";
@@ -25,7 +25,8 @@ export default defineEventHandler(async (event) => {
   try {
     const filePath = join(process.cwd(), "public", attachment.path);
     await unlink(filePath);
-  } catch (error) {
+  }
+  catch (error) {
     console.error("Failed to delete file:", error);
     // Continue with database deletion even if file deletion fails
   }

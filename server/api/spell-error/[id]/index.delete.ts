@@ -6,7 +6,7 @@ import { routeParamsSchema } from "~/lib/validations";
 
 export default defineEventHandler(async (event) => {
   const { id } = await getValidatedRouterParams(event, routeParamsSchema.parseAsync);
-  
+
   const result = await db.delete(spellErrors)
     .where(eq(spellErrors.id, id))
     .returning();

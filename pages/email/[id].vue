@@ -190,10 +190,12 @@ async function exportPDF() {
             >
           </div>
         </div>
-        
+
         <div v-else class="text-center py-8">
           <Icon name="lucide:image-off" class="mx-auto h-12 w-12 text-gray-400" />
-          <p class="mt-2 text-gray-500">No screenshot available</p>
+          <p class="mt-2 text-gray-500">
+            No screenshot available
+          </p>
         </div>
       </CardContent>
     </Card>

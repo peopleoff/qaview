@@ -1,11 +1,10 @@
 import db from "@/lib/db/index";
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async () => {
   try {
     // Simple database connectivity check
     await db.query.emails.findFirst({
       columns: { id: true },
-      limit: 1,
     });
 
     return {
@@ -13,7 +12,9 @@ export default defineEventHandler(async (event) => {
       timestamp: new Date().toISOString(),
       database: "connected",
     };
-  } catch (error) {
+  }
+  catch (error) {
+    console.error(error);
     throw createError({
       statusCode: 503,
       statusMessage: "Service Unavailable - Database connection failed",

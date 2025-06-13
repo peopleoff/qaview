@@ -25,35 +25,40 @@ A comprehensive email quality assurance analysis tool built with Nuxt 3. QA Budd
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm, pnpm, yarn, or bun
 
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd qa-buddy
 ```
 
 2. Set up environment variables:
+
 ```bash
 # Copy the example environment file
 cp .env.example .env
 ```
 
 3. Install dependencies:
+
 ```bash
 npm install
 ```
 
 4. Set up the database:
+
 ```bash
 # Run generate to create schemas and create the database
 npm run db:setup
 ```
 
 5. Start the development server:
+
 ```bash
 npm run dev
 ```

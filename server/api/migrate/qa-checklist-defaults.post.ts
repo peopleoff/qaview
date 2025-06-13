@@ -1,8 +1,8 @@
 import db from "@/lib/db/index";
-import { emails, qaChecklist } from "@/lib/db/schema/index";
+import { qaChecklist } from "@/lib/db/schema/index";
 import { defaultChecklistItems } from "~/lib/validations";
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async () => {
   try {
     // Get all emails
     const allEmails = await db.query.emails.findMany({
@@ -33,10 +33,12 @@ export default defineEventHandler(async (event) => {
 
           await db.insert(qaChecklist).values(newItems);
           migratedCount++;
-        } else {
+        }
+        else {
           skippedCount++;
         }
-      } else {
+      }
+      else {
         // No checklist items exist, create all default items
         const checklistItems = defaultChecklistItems.map(item => ({
           emailId: email.id,
@@ -58,7 +60,8 @@ export default defineEventHandler(async (event) => {
       skipped: skippedCount,
       total: allEmails.length,
     };
-  } catch (error) {
+  }
+  catch (error) {
     console.error("Migration failed:", error);
     throw createError({
       statusCode: 500,

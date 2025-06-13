@@ -42,7 +42,7 @@ export default withNuxt(antfu({
         pascalCase: true,
         kebabCase: true,
       },
-      ignore: ["README.md", "CLAUDE.md"],
+      ignore: ["README.md", "CLAUDE.md", "DOCKER.md"],
     }],
   },
 }));

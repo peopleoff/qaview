@@ -5,11 +5,13 @@ This guide explains how to run QA Buddy in a Docker container for consistent dep
 ## Quick Start
 
 ### Option 1: Use the startup script (Recommended)
+
 ```bash
 ./docker-start.sh
 ```
 
 ### Option 2: Manual Docker Compose
+
 ```bash
 # Build and start the application
 docker-compose up --build -d
@@ -25,21 +27,25 @@ Once running, access QA Buddy at: **http://localhost:3000**
 ## Management Commands
 
 ### View Application Logs
+
 ```bash
 docker-compose logs -f
 ```
 
 ### Stop the Application
+
 ```bash
 docker-compose down
 ```
 
 ### Restart the Application
+
 ```bash
 docker-compose restart
 ```
 
 ### Update the Application
+
 ```bash
 # Pull latest changes and rebuild
 git pull
@@ -47,6 +53,7 @@ docker-compose up --build -d
 ```
 
 ### Reset Everything (Clean Start)
+
 ```bash
 # Stop and remove containers, networks, and volumes
 docker-compose down -v
@@ -58,11 +65,13 @@ docker-compose up --build -d
 ## Data Persistence
 
 The application uses Docker volumes to persist:
+
 - **Database**: SQLite database stored in `qa-buddy-data` volume
 - **Uploads**: Email files, screenshots, and sendlogs stored in `qa-buddy-uploads` volume
 - **Dictionaries**: Custom spell check dictionaries (mounted from host)
 
 ### Backup Data
+
 ```bash
 # Backup database
 docker run --rm -v qa-buddy-data:/data -v $(pwd):/backup alpine \
@@ -74,6 +83,7 @@ docker run --rm -v qa-buddy-uploads:/data -v $(pwd):/backup alpine \
 ```
 
 ### Restore Data
+
 ```bash
 # Restore database
 docker run --rm -v qa-buddy-data:/data -v $(pwd):/backup alpine \
@@ -97,6 +107,7 @@ nano .env
 ```
 
 Available options:
+
 - `NODE_ENV`: Environment mode (production/development)
 - `DB_FILE_NAME`: Database file path
 - `PORT`: Application port (default: 3000)
@@ -105,21 +116,25 @@ Available options:
 ## Troubleshooting
 
 ### Check Application Health
+
 ```bash
 curl http://localhost:3000/api/health
 ```
 
 ### View Detailed Logs
+
 ```bash
 docker-compose logs -f qa-buddy
 ```
 
 ### Check Container Status
+
 ```bash
 docker-compose ps
 ```
 
 ### Access Container Shell
+
 ```bash
 docker-compose exec qa-buddy sh
 ```
@@ -127,6 +142,7 @@ docker-compose exec qa-buddy sh
 ### Common Issues
 
 **Port 3000 already in use:**
+
 ```bash
 # Check what's using port 3000
 lsof -i :3000
@@ -135,6 +151,7 @@ lsof -i :3000
 ```
 
 **Database connection issues:**
+
 ```bash
 # Reset database volume
 docker-compose down -v
@@ -142,6 +159,7 @@ docker-compose up --build -d
 ```
 
 **Playwright/Screenshot issues:**
+
 ```bash
 # Rebuild with fresh dependencies
 docker-compose down
@@ -154,12 +172,14 @@ docker-compose up -d
 ### For Team Members
 
 1. **Clone the repository:**
+
    ```bash
    git clone <repository-url>
    cd qa-buddy
    ```
 
 2. **Start the application:**
+
    ```bash
    ./docker-start.sh
    ```
@@ -169,12 +189,14 @@ docker-compose up -d
 ### For Production Deployment
 
 1. **Set production environment:**
+
    ```bash
    echo "NODE_ENV=production" > .env
    echo "DB_FILE_NAME=/app/data/database.sqlite" >> .env
    ```
 
 2. **Start with production settings:**
+
    ```bash
    docker-compose up --build -d
    ```
