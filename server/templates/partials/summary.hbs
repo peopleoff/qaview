@@ -1,0 +1,99 @@
+<!-- Summary Section -->
+<div class="mb-8">
+    <h2 class="text-xl font-semibold mb-4 text-muted-foreground">Summary</h2>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 gap-6 mb-6">
+        <!-- Links Summary -->
+        <div class="bg-gray-50 p-4 rounded">
+            <h3 class="text-lg font-medium mb-2 text-muted-foreground">Links Analysis</h3>
+            <div class="space-y-1">
+                <div><strong>Total Links:</strong> {{emailData.links.length}}</div>
+                {{#if linkStatusSummary.successful}}
+                    <div class="text-green-600">✓ {{linkStatusSummary.successful}} successful (200-299)</div>
+                {{/if}}
+                {{#if linkStatusSummary.redirects}}
+                    <div class="text-yellow-600">↻ {{linkStatusSummary.redirects}} redirects (300-399)</div>
+                {{/if}}
+                {{#if linkStatusSummary.failed}}
+                    <div class="text-red-600">✗ {{linkStatusSummary.failed}} failed (400+)</div>
+                {{/if}}
+                {{#if linkStatusSummary.unknown}}
+                    <div class="text-muted-foreground">? {{linkStatusSummary.unknown}} unknown</div>
+                {{/if}}
+            </div>
+        </div>
+
+        <!-- Images Summary -->
+        <div class="bg-gray-50 p-4 rounded">
+            <h3 class="text-lg font-medium mb-2 text-muted-foreground">Images Analysis</h3>
+            <div class="space-y-1">
+                <div><strong>Total Images:</strong> {{emailData.images.length}}</div>
+                {{#if imageStatusSummary.successful}}
+                    <div class="text-green-600">✓ {{imageStatusSummary.successful}} accessible</div>
+                {{/if}}
+                {{#if imageStatusSummary.failed}}
+                    <div class="text-red-600">✗ {{imageStatusSummary.failed}} failed</div>
+                {{/if}}
+                {{#if imageStatusSummary.unknown}}
+                    <div class="text-muted-foreground">? {{imageStatusSummary.unknown}} unknown</div>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+
+    <!-- Spell Check Summary -->
+    <div class="bg-gray-50 p-4 rounded mb-6">
+        <h3 class="text-lg font-medium mb-2 text-muted-foreground">Spelling & Grammar</h3>
+        <div class="space-y-1">
+            <div><strong>Status:</strong> 
+                <span class="{{getSpellCheckStatusColor spellCheckSummary.status}}">
+                    {{spellCheckSummary.status}}
+                </span>
+            </div>
+            <div><strong>Errors Found:</strong> {{spellCheckSummary.totalErrors}}</div>
+        </div>
+    </div>
+
+    <!-- Sendlog Summary -->
+    <div class="bg-purple-50 p-4 rounded mb-6">
+        <h3 class="text-lg font-medium mb-2 text-muted-foreground">Sendlog Attachments</h3>
+        <div class="space-y-1">
+            <div><strong>Total Attachments:</strong> {{emailData.sendlogAttachments.length}}</div>
+            <div><strong>Status:</strong> 
+                <span class="{{#if emailData.sendlogAttachments.length}}text-green-600{{else}}text-muted-foreground{{/if}}">
+                    {{#if emailData.sendlogAttachments.length}}{{emailData.sendlogAttachments.length}} attachment{{#if (gt emailData.sendlogAttachments.length 1)}}s{{/if}} uploaded{{else}}No attachments{{/if}}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- QA Status Grid -->
+    <div class="grid grid-cols-2 gap-6 mb-6">
+        <!-- QA Checklist Summary -->
+        <div class="bg-blue-50 p-4 rounded">
+            <h3 class="text-lg font-medium mb-2 text-muted-foreground">QA Checklist</h3>
+            <div class="space-y-1">
+                <div><strong>Status:</strong> 
+                    <span class="{{getQAChecklistStatusColor qaChecklistSummary.status}}">
+                        {{qaChecklistSummary.status}}
+                    </span>
+                </div>
+                <div><strong>Progress:</strong> {{qaChecklistSummary.completedItems}}/{{qaChecklistSummary.totalItems}} items ({{qaChecklistSummary.completionPercentage}}%)</div>
+            </div>
+        </div>
+
+        <!-- QA Notes Summary -->
+        <div class="bg-yellow-50 p-4 rounded">
+            <h3 class="text-lg font-medium mb-2 text-muted-foreground">QA Notes</h3>
+            <div class="space-y-1">
+                <div><strong>Total Notes:</strong> {{qaNotesCount}}</div>
+                <div><strong>Status:</strong> 
+                    <span class="{{#if qaNotesCount}}text-blue-600{{else}}text-muted-foreground{{/if}}">
+                        {{#if qaNotesCount}}{{qaNotesCount}} note{{#if (gt qaNotesCount 1)}}s{{/if}} documented{{else}}No notes added{{/if}}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

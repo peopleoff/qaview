@@ -1,0 +1,53 @@
+{{> header}}
+
+{{!-- {{> summary}} --}}
+<h2 class="text-xl font-semibold mb-4 text-muted-foreground">Email Preview</h2>
+<!-- Email Preview -->
+<div class="mb-6 flex gap-2 justify-between">
+    <!-- Desktop Preview -->
+    {{#if emailDesktopDataUrl}}
+    <div class="mb-6">
+        <h3 class="text-lg font-medium mb-2 text-muted-foreground">Desktop View (800px)</h3>
+        <img src="{{emailDesktopDataUrl}}" alt="Desktop Email Preview" class="border border-gray-300 max-w-full h-auto mb-4"
+            style="max-height: 1200px; object-fit: contain;">
+    </div>
+    {{/if}}
+    
+    <!-- Mobile Preview -->
+    {{#if emailMobileDataUrl}}
+    <div class="mb-6">
+        <h3 class="text-lg font-medium mb-2 text-muted-foreground">Mobile View (375px)</h3>
+        <img src="{{emailMobileDataUrl}}" alt="Mobile Email Preview" class="border border-gray-300 h-auto mb-4"
+            style="max-width: 375px; max-height: 1200px; object-fit: contain;">
+    </div>
+    {{/if}}
+</div>
+
+{{#if emailData.qaChecklist.length}}
+{{> qa-checklist}}
+{{/if}}
+
+{{#if emailData.sendlogAttachments.length}}
+{{> sendlog-attachments}}
+{{/if}}
+
+
+{{#if emailData.qaNotes.length}}
+{{> qa-notes}}
+{{/if}}
+
+{{#if emailData.links.length}}
+{{> links-summary}}
+{{/if}}
+
+{{#if emailData.links.length}}
+{{> detailed-links}}
+{{/if}}
+
+{{#if emailData.images.length}}
+{{> detailed-images}}
+{{/if}}
+
+{{#if emailData.spellErrors.length}}
+{{> detailed-spell-check}}
+{{/if}}
