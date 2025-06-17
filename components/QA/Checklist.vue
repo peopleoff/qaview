@@ -157,7 +157,7 @@ async function markAllComplete() {
       <CardTitle>
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-2xl font-semibold text-primary">
+            <h2 class="text-2xl font-semibold text-foreground">
               QA Checklist
             </h2>
           </div>
@@ -197,8 +197,8 @@ async function markAllComplete() {
         <div
           v-for="item in checklistItems"
           :key="item.id"
-          class="p-3 rounded-lg border border-accent hover:bg-primary/10 transition-colors"
-          :class="{ 'bg-primary/20 border-primary/50': item.completed }"
+          class="p-3 rounded-lg border border-accent hover:bg-accent transition-colors"
+          :class="{ 'bg-accent border-accent/50': item.completed }"
         >
           <!-- Main Item Row -->
           <div class="flex items-start space-x-3">
@@ -207,7 +207,7 @@ async function markAllComplete() {
                 :id="item.id"
                 type="checkbox"
                 :checked="item.completed"
-                class="h-4 w-4 text-primary focus:ring-primary border-accent rounded cursor-pointer"
+                class="h-4 w-4 text-foreground focus:ring-primary border-accent rounded cursor-pointer"
                 @change="toggleItem(item.id)"
               >
             </div>
@@ -240,7 +240,7 @@ async function markAllComplete() {
 
           <!-- Existing Note Display -->
           <div v-if="item.note && editingNoteId !== item.id" class="mt-3 ml-7">
-            <div class="p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-muted-foreground">
+            <div class="p-2 bg-accent border border-primary/50 rounded text-sm text-muted-foreground">
               <div class="flex items-start justify-between">
                 <div class="flex-1 whitespace-pre-wrap">
                   {{ item.note }}

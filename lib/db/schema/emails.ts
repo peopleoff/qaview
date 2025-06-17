@@ -1,11 +1,11 @@
 import { relations } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
+import { attachments } from "./attachments";
 import { images } from "./images";
 import { links } from "./links";
 import { qaChecklist } from "./qaChecklist";
 import { qaNotes } from "./qaNotes";
-import { sendlogAttachments } from "./sendlogAttachments";
 import { spellErrors } from "./spellErrors";
 
 export const emails = sqliteTable("emails", {
@@ -27,5 +27,5 @@ export const emailsRelations = relations(emails, ({ many }) => ({
   spellErrors: many(spellErrors),
   qaChecklist: many(qaChecklist),
   qaNotes: many(qaNotes),
-  sendlogAttachments: many(sendlogAttachments),
+  attachments: many(attachments),
 }));

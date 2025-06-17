@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
       spellErrors: true,
       qaChecklist: true,
       qaNotes: true,
-      sendlogAttachments: true,
+      attachments: true,
     },
   });
 

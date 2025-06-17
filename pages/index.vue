@@ -42,8 +42,8 @@ async function deleteEmail(id: string) {
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-3xl font-bold text-primary">
-              QA Buddy
+            <h1 class="text-3xl font-bold text-foreground">
+              QAView
             </h1>
             <p class="mt-2 text-muted-foreground">
               Email quality assurance analysis tool
@@ -99,7 +99,20 @@ async function deleteEmail(id: string) {
                   <TableCell class="text-muted-foreground">
                     {{ formatDate(email.createdAt) }}
                   </TableCell>
-                  <TableCell>
+                  <TableCell class="flex gap-2">
+                    <NuxtLink
+                      v-if="email.analyzed"
+                      :to="`/email/${email.id}/download`"
+                      target="_blank"
+                    >
+                      <Button
+                        variant="outline"
+                        size="icon"
+                      >
+                        <Icon name="lucide:download" class="text-foreground" />
+                        <span class="sr-only">Download</span>
+                      </Button>
+                    </NuxtLink>
                     <ConfirmDialog
                       title="Delete Email"
                       description="This action cannot be undone. This will permanently delete the email."

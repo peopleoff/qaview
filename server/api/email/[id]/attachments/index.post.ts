@@ -35,13 +35,12 @@ export default defineEventHandler(async (event) => {
 
   for (const item of formData) {
     if (item.name === "files" && item.filename && item.data) {
-      // Allow any file type for general attachments
-      // Optionally restrict certain dangerous file types
-      const dangerousTypes = ["application/x-executable", "application/x-msdownload"];
-      if (dangerousTypes.includes(item.type || "")) {
+      // Validate file type (images only)
+      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+      if (!allowedTypes.includes(item.type || "")) {
         throw createError({
           statusCode: 400,
-          statusMessage: `File type not allowed: ${item.type}`,
+          statusMessage: `Invalid file type: ${item.type}. Only images are allowed.`,
         });
       }
 

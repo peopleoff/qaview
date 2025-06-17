@@ -11,6 +11,7 @@ export const images = sqliteTable("images", {
   status: integer(),
   height: integer(),
   width: integer(),
+  isEdited: integer().default(0),
   createdAt: integer().notNull().$default(() => Date.now()),
   updatedAt: integer().notNull().$default(() => Date.now()).$onUpdate(() => Date.now()),
 });

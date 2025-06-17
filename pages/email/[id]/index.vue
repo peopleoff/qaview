@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { toast } from "vue-sonner";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +20,7 @@ import {
 
 const { id } = useRoute().params;
 
-const { data: emailData, refresh } = useAsyncData("email", () => $fetch(`/api/email/${id}`));
+const { data: emailData, refresh: refreshEmail } = useAsyncData("email", () => $fetch(`/api/email/${id}`));
 
 const isExporting = ref(false);
 const activeTab = ref("desktop");
@@ -26,7 +28,7 @@ const activeTab = ref("desktop");
 async function analyzeEmail() {
   try {
     await $fetch(`/api/email/${id}/analyze`);
-    refresh();
+    refresh("Email analyzed");
   }
   catch (e) {
     console.error(e);
@@ -39,26 +41,8 @@ async function exportPDF() {
     return;
   }
 
-  isExporting.value = true;
-  try {
-    const downloadUrl = `/api/email/${id}/export`;
-    const a = document.createElement("a");
-    a.href = downloadUrl;
-    a.download = `email-${id}-qa-report.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
-  catch (e) {
-    console.error("Export failed:", e);
-    alert("Failed to export PDF. Please try again.");
-  }
-  finally {
-    // Reset loading state after download should have started
-    setTimeout(() => {
-      isExporting.value = false;
-    }, 1500);
-  }
+  // Open download page in a new tab
+  window.open(`/email/${id}/download`, "_blank");
 };
 
 async function previewExport() {
@@ -69,7 +53,14 @@ async function deleteQa() {
   await $fetch(`/api/email/${id}/analyze`, {
     method: "DELETE",
   });
-  refresh();
+  refresh("Email deleted");
+}
+
+async function refresh(message: string) {
+  await refreshEmail();
+  toast(message, {
+    description: "The email has been refreshed.",
+  });
 }
 </script>
 
@@ -80,7 +71,7 @@ async function deleteQa() {
         <CardTitle>
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
             <div>
-              <h2 class="text-2xl font-semibold text-primary">
+              <h2 class="text-2xl font-semibold text-foreground">
                 Summary
               </h2>
             </div>
@@ -126,20 +117,20 @@ async function deleteQa() {
         <CardDescription>Last updated: {{ new Date(emailData.updatedAt).toLocaleString() }}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-          <div>
-            <h3 class="text-sm font-medium text-muted-foreground">
-              Subject
-            </h3>
-            <p class="mt-1 text-lg font-medium text-primary">
-              {{ emailData.subject || 'No subject' }}
-            </p>
-          </div>
+        <div class="mb-4">
+          <h3 class="text-sm font-medium text-muted-foreground">
+            Subject
+          </h3>
+          <p class="mt-1 text-lg font-medium text-foreground">
+            {{ emailData.subject || 'No subject' }}
+          </p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <h3 class="text-sm font-medium text-muted-foreground">
               Links
             </h3>
-            <p class="mt-1 text-lg font-medium text-primary">
+            <p class="mt-1 text-lg font-medium text-foreground">
               {{ emailData.links.length }}
             </p>
           </div>
@@ -147,7 +138,7 @@ async function deleteQa() {
             <h3 class="text-sm font-medium text-muted-foreground">
               Images
             </h3>
-            <p class="mt-1 text-lg font-medium text-primary">
+            <p class="mt-1 text-lg font-medium text-foreground">
               {{ emailData.images.length }}
             </p>
           </div>
@@ -155,15 +146,15 @@ async function deleteQa() {
             <h3 class="text-sm font-medium text-muted-foreground">
               Sendlogs
             </h3>
-            <p class="mt-1 text-lg font-medium text-primary">
-              {{ emailData.sendlogAttachments?.length || 0 }}
+            <p class="mt-1 text-lg font-medium text-foreground">
+              {{ emailData.attachments?.length || 0 }}
             </p>
           </div>
           <div>
             <h3 class="text-sm font-medium text-muted-foreground">
               Spelling
             </h3>
-            <p class="mt-1 text-lg font-medium text-primary">
+            <p class="mt-1 text-lg font-medium text-foreground">
               {{ emailData.spellErrors?.length || 0 }} errors
             </p>
           </div>
@@ -240,7 +231,7 @@ async function deleteQa() {
         <CardDescription>Links Analysis</CardDescription>
       </CardHeader>
       <CardContent>
-        <EmailTableLinks :links="emailData.links" />
+        <EmailTableLinks :links="emailData.links" @link-updated="refresh('Link updated')" />
       </CardContent>
     </Card>
     <Card>
@@ -249,7 +240,10 @@ async function deleteQa() {
         <CardDescription>Images Analysis</CardDescription>
       </CardHeader>
       <CardContent>
-        <EmailTableImages :images="emailData.images" />
+        <EmailTableImages
+          :images="emailData.images"
+          @image-updated="refresh('Image updated')"
+        />
       </CardContent>
     </Card>
     <Card>
@@ -258,11 +252,11 @@ async function deleteQa() {
         <CardDescription>Spell Check Analysis</CardDescription>
       </CardHeader>
       <CardContent>
-        <EmailTableSpellCheck :spell-errors="emailData.spellErrors || []" @refresh="refresh" />
+        <EmailTableSpellCheck :spell-errors="emailData.spellErrors || []" @refresh="refresh('Spell check updated')" />
       </CardContent>
     </Card>
     <QAChecklist :email-id="Number(id)" />
-    <EmailSendlogAttachments :email-id="Number(id)" @refresh="refresh" />
+    <EmailAttachments :email-id="Number(id)" @refresh="refresh('Attachments updated')" />
     <QANotes :email-id="Number(id)" />
   </div>
 </template>

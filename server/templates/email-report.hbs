@@ -8,11 +8,11 @@
     {{#if emailDesktopDataUrl}}
     <div class="mb-6">
         <h3 class="text-lg font-medium mb-2 text-muted-foreground">Desktop View (800px)</h3>
-        <img src="{{emailDesktopDataUrl}}" alt="Desktop Email Preview" class="border border-gray-300 max-w-full h-auto mb-4"
-            style="max-height: 1200px; object-fit: contain;">
+        <img src="{{emailDesktopDataUrl}}" alt="Desktop Email Preview"
+            class="border border-gray-300 max-w-full h-auto mb-4" style="max-height: 1200px; object-fit: contain;">
     </div>
     {{/if}}
-    
+
     <!-- Mobile Preview -->
     {{#if emailMobileDataUrl}}
     <div class="mb-6">
@@ -27,7 +27,7 @@
 {{> qa-checklist}}
 {{/if}}
 
-{{#if emailData.sendlogAttachments.length}}
+{{#if emailData.attachments.length}}
 {{> sendlog-attachments}}
 {{/if}}
 

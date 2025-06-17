@@ -25,7 +25,7 @@ npx drizzle-kit studio      # Open Drizzle Studio
 
 ## Architecture Overview
 
-**QA Buddy** is a Nuxt 3 application for email quality assurance analysis. It parses uploaded .eml files and performs comprehensive analysis using Playwright to check links, images, and capture screenshots.
+**QAView** is a Nuxt 3 application for email quality assurance analysis. It parses uploaded .eml files and performs comprehensive analysis using Playwright to check links, images, and capture screenshots.
 
 ### Core Components
 

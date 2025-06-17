@@ -1,0 +1,1 @@
+ALTER TABLE `images` ADD `is_edited` integer DEFAULT 0;

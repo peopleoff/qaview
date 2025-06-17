@@ -14,6 +14,7 @@ export const links = sqliteTable("links", {
   finalUrl: text(),
   utmParams: text({ mode: "json" }),
   screenshotPath: text(),
+  isEdited: integer().default(0),
   createdAt: integer().notNull().$default(() => Date.now()),
   updatedAt: integer().notNull().$default(() => Date.now()).$onUpdate(() => Date.now()),
 });

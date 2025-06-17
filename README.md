@@ -1,6 +1,6 @@
-# QA Buddy
+# QAView
 
-A comprehensive email quality assurance analysis tool built with Nuxt 3. QA Buddy analyzes uploaded .eml files to check links, validate images, capture screenshots, and perform spell checking to ensure email quality before deployment.
+A comprehensive email quality assurance analysis tool built with Nuxt 3. QAView analyzes uploaded .eml files to check links, validate images, capture screenshots, and perform spell checking to ensure email quality before deployment.
 
 ## Features
 

@@ -6,7 +6,7 @@
   <div class="navbar flex justify-between items-center bg-base-100 shadow-sm h-16 px-4">
     <div class="flex-1">
       <NuxtLink to="/">
-        QA Buddy
+        QAView
       </NuxtLink>
     </div>
     <div class="flex-none">

@@ -132,8 +132,8 @@ function resetDialog() {
                   v-if="uploadProgress[file.name]?.status !== 'uploading'"
                   variant="ghost"
                   size="sm"
-                  @click="removeFile(index)"
                   class="flex-shrink-0"
+                  @click="removeFile(index)"
                 >
                   <Icon name="lucide:x" class="h-3 w-3" />
                 </Button>

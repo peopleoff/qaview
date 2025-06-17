@@ -3,8 +3,6 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { chromium } from "playwright";
 
-import type { EmailWithRelations } from "~/types/Email";
-
 import db from "@/lib/db/index";
 import { emails } from "@/lib/db/schema/index";
 import { routeParamsSchema } from "~/lib/validations";
@@ -22,9 +20,9 @@ export default defineEventHandler(async (event) => {
       spellErrors: true,
       qaChecklist: true,
       qaNotes: true,
-      sendlogAttachments: true,
+      attachments: true,
     },
-  }) as EmailWithRelations | null;
+  });
 
   if (!emailData) {
     throw createError({
@@ -118,14 +116,14 @@ export default defineEventHandler(async (event) => {
   const linkScreenshots: Record<string, string> = {};
   for (const link of emailData.links) {
     if (link.screenshotPath) {
-      const screenshotPath = `/uploads/analysis/email-${emailData.id}/${link.screenshotPath}`;
-      linkScreenshots[link.id] = await imageToDataUrl(screenshotPath);
+      const fullScreenshotPath = `/uploads/analysis/email-${emailData.id}/${link.screenshotPath}`;
+      linkScreenshots[link.id] = await imageToDataUrl(fullScreenshotPath);
     }
   }
 
   // Convert sendlog attachments to data URLs
   const sendlogDataUrls: Record<string, string> = {};
-  for (const attachment of emailData.sendlogAttachments || []) {
+  for (const attachment of emailData.attachments || []) {
     if (attachment.mimeType.startsWith("image/")) {
       sendlogDataUrls[attachment.id] = await imageToDataUrl(attachment.path);
     }

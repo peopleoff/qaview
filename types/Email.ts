@@ -24,6 +24,7 @@ export type Link = {
   redirectChain: Record<string, string>;
   finalUrl: string | null;
   screenshotPath: string | null;
+  isEdited: number | null;
 };
 
 export type Image = {
@@ -36,6 +37,7 @@ export type Image = {
   updatedAt: number;
   height: number | null;
   width: number | null;
+  isEdited: number | null;
 };
 
 export type SpellError = {
@@ -68,10 +70,26 @@ export type QaNote = {
   updatedAt: number;
 };
 
+export type Attachment = {
+  id: number;
+  emailId: number;
+  filename: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  path: string;
+  description: string | null;
+  type: string | null;
+  isEdited: number | null;
+  createdAt: number;
+  updatedAt: number;
+};
+
 export type EmailWithRelations = Email & {
   links: Link[];
   images: Image[];
   spellErrors: SpellError[];
   qaChecklist: QaChecklist[];
   qaNotes: QaNote[];
+  attachments: Attachment[];
 };

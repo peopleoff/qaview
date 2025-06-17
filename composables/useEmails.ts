@@ -15,8 +15,8 @@ export type UploadEmailData = {
 };
 
 export type UploadProgressCallback = (
-  fileName: string, 
-  status: 'pending' | 'uploading' | 'success' | 'error', 
+  fileName: string,
+  status: "pending" | "uploading" | "success" | "error",
   error?: string
 ) => void;
 // State
@@ -92,15 +92,14 @@ export function useEmails() {
     isUploading.value = true;
     uploadError.value = null;
 
-    let successCount = 0;
     let errorCount = 0;
 
     for (const file of files) {
       const fileName = file.name;
-      
+
       try {
-        onProgress?.(fileName, 'uploading');
-        
+        onProgress?.(fileName, "uploading");
+
         const formData = new FormData();
         formData.append("file", file);
         // Use filename without extension as email name
@@ -112,13 +111,12 @@ export function useEmails() {
           body: formData,
         });
 
-        onProgress?.(fileName, 'success');
-        successCount++;
+        onProgress?.(fileName, "success");
       }
       catch (err) {
         console.error(`Upload failed for ${fileName}:`, err);
         const errorMessage = err instanceof Error ? err.message : "Upload failed";
-        onProgress?.(fileName, 'error', errorMessage);
+        onProgress?.(fileName, "error", errorMessage);
         errorCount++;
       }
     }

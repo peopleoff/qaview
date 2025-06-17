@@ -1,6 +1,6 @@
-# QA Buddy - Docker Deployment Guide
+# QAView - Docker Deployment Guide
 
-This guide explains how to run QA Buddy in a Docker container for consistent deployment across different environments.
+This guide explains how to run QAView in a Docker container for consistent deployment across different environments.
 
 ## Quick Start
 
@@ -22,7 +22,7 @@ curl http://localhost:3000/api/health
 
 ## Access the Application
 
-Once running, access QA Buddy at: **http://localhost:3000**
+Once running, access QAView at: **http://localhost:3000**
 
 ## Management Commands
 
@@ -184,7 +184,7 @@ docker-compose up -d
    ./docker-start.sh
    ```
 
-3. **Access QA Buddy:** http://localhost:3000
+3. **Access QAView:** http://localhost:3000
 
 ### For Production Deployment
 

@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { Image } from "@/types/Email";
 
+import EditImageDialog from "@/components/Email/EditImageDialog.vue";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -16,7 +18,13 @@ defineProps<{
   images: Image[];
 }>();
 
+const emit = defineEmits<{
+  (e: "imageUpdated"): void;
+}>();
+
 const selectedImage = ref<string | null>(null);
+const editDialogOpen = ref(false);
+const editingImage = ref<Image | null>(null);
 
 function openImageModal(imageSrc: string) {
   selectedImage.value = imageSrc;
@@ -24,6 +32,15 @@ function openImageModal(imageSrc: string) {
 
 function closeImageModal() {
   selectedImage.value = null;
+}
+
+function edit(image: Image) {
+  editingImage.value = image;
+  editDialogOpen.value = true;
+}
+
+function handleImageUpdated() {
+  emit("imageUpdated");
 }
 </script>
 
@@ -37,12 +54,26 @@ function closeImageModal() {
         </TableHead>
         <TableHead>Status</TableHead>
         <TableHead>Dimensions</TableHead>
+        <TableHead>Preview</TableHead>
       </TableRow>
     </TableHeader>
     <TableBody>
-      <TableRow v-for="image in images" :key="image.id">
+      <TableRow
+        v-for="image in images"
+        :key="image.id"
+        class="relative group"
+      >
         <TableCell class="font-medium truncate max-w-[200px]">
-          {{ image.alt }}
+          <div class="flex items-center gap-2">
+            {{ image.alt }}
+            <Badge
+              v-if="image.isEdited"
+              variant="secondary"
+              class="text-xs"
+            >
+              Edited
+            </Badge>
+          </div>
         </TableCell>
         <TableCell class="font-medium">
           <Badge
@@ -62,6 +93,16 @@ function closeImageModal() {
             @click="openImageModal(image.src)"
           >
           <span v-else>N/A</span>
+        </TableCell>
+        <TableCell>
+          <Button
+            variant="outline"
+            size="icon"
+            class="absolute top-1/2 -translate-y-1/2 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+            @click="edit(image)"
+          >
+            <Icon name="mdi:pencil" />
+          </Button>
         </TableCell>
       </TableRow>
     </TableBody>
@@ -88,4 +129,11 @@ function closeImageModal() {
       >
     </div>
   </div>
+
+  <!-- Edit Image Dialog -->
+  <EditImageDialog
+    v-model:open="editDialogOpen"
+    :image="editingImage"
+    @updated="handleImageUpdated"
+  />
 </template>

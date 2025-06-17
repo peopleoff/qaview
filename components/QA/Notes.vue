@@ -78,7 +78,7 @@ function formatTimestamp(timestamp: number): string {
       <CardTitle>
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-2xl font-semibold text-primary">
+            <h2 class="text-2xl font-semibold text-foreground">
               QA Notes
             </h2>
           </div>

@@ -33,7 +33,8 @@ export type EmailAnalysisResult = {
   images: AnalyzedImage[];
   spellCheck: SpellCheckResult;
   screenshots: {
-    fullPage?: string;
+    desktop: string;
+    mobile: string;
   };
 };
 
@@ -135,7 +136,7 @@ export async function analyzeEmailContent(emailId: number, html: string): Promis
       const link = links[i];
       // Skip empty or non-http links
       if (!link.url || !link.url.startsWith("http")) {
-        console.log("skipping link", link);
+        console.warn(`Skipping link ${link.url} because it is not a valid URL`);
         continue;
       }
 
@@ -164,41 +165,24 @@ export async function analyzeEmailContent(emailId: number, html: string): Promis
           }
         });
 
-        // Navigate to the link with better wait conditions
+        // Navigate to the link with more reliable wait conditions
         const response = await linkPage.goto(link.url, {
-          waitUntil: "networkidle",
-          timeout: 30000, // 30 second timeout
+          waitUntil: "load", // Wait for page and resources to load
+          timeout: 15000, // Reduced to 15 second timeout
         }).catch(() => null); // Catch navigation errors
 
-        // Wait for additional content to load
-        await linkPage.waitForTimeout(2000);
+        // Wait for dynamic content to load (increased for social media sites)
+        await linkPage.waitForTimeout(5000);
 
-        // Try to wait for any dynamic content
+        // Ensure DOM is ready
         await linkPage.waitForLoadState("domcontentloaded").catch(() => {});
 
         const screenshotPath = join(screenshotsDir, `link-${i}.png`);
 
-        // Retry screenshot logic with multiple attempts
-        let screenshotSuccess = false;
-        for (let attempt = 0; attempt < 3 && !screenshotSuccess; attempt++) {
-          try {
-            // Wait a bit more on retry attempts
-            if (attempt > 0) {
-              await linkPage.waitForTimeout(1000 * attempt);
-            }
-            
-            await linkPage.screenshot({ 
-              path: screenshotPath,
-              timeout: 10000 
-            });
-            screenshotSuccess = true;
-          } catch (error) {
-            console.warn(`Screenshot attempt ${attempt + 1} failed for ${link.url}:`, error);
-            if (attempt === 2) {
-              console.error(`All screenshot attempts failed for ${link.url}`);
-            }
-          }
-        }
+        await linkPage.screenshot({
+          path: screenshotPath,
+          timeout: 10000,
+        });
 
         // Get status code
         const status = response ? response.status() : 0;
@@ -236,49 +220,58 @@ export async function analyzeEmailContent(emailId: number, html: string): Promis
       }
     }
 
-    // Check each image
+    // Check each image with a separate headless browser
     const analyzedImages: AnalyzedImage[] = [];
 
-    for (let i = 0; i < images.length; i++) {
-      const image = images[i];
+    // Create a headless browser specifically for image analysis
+    const imageBrowser = await chromium.launch({ headless: true });
 
-      // Skip data URLs
-      if (image.src.startsWith("data:")) {
-        analyzedImages.push({
-          ...image,
-          status: 200,
-        });
-        continue;
+    try {
+      for (let i = 0; i < images.length; i++) {
+        const image = images[i];
+
+        // Skip data URLs
+        if (image.src.startsWith("data:")) {
+          analyzedImages.push({
+            ...image,
+            status: 200,
+          });
+          continue;
+        }
+
+        try {
+          // Create a new page for checking this image
+          const imagePage = await imageBrowser.newPage();
+
+          // Try to fetch the image
+          const response = await imagePage.goto(image.src, {
+            timeout: 5000, // 5 second timeout
+          }).catch(() => null);
+
+          // Get status code
+          const status = response ? response.status() : 0;
+
+          // Add to analyzed images
+          analyzedImages.push({
+            ...image,
+            status,
+          });
+
+          // Close the image page
+          await imagePage.close();
+        }
+        catch (error) {
+          console.error(`Error analyzing image ${image.src}:`, error);
+          analyzedImages.push({
+            ...image,
+            status: 0,
+          });
+        }
       }
-
-      try {
-        // Create a new page for checking this image
-        const imagePage = await browser.newPage();
-
-        // Try to fetch the image
-        const response = await imagePage.goto(image.src, {
-          timeout: 5000, // 5 second timeout
-        }).catch(() => null);
-
-        // Get status code
-        const status = response ? response.status() : 0;
-
-        // Add to analyzed images
-        analyzedImages.push({
-          ...image,
-          status,
-        });
-
-        // Close the image page
-        await imagePage.close();
-      }
-      catch (error) {
-        console.error(`Error analyzing image ${image.src}:`, error);
-        analyzedImages.push({
-          ...image,
-          status: 0,
-        });
-      }
+    }
+    finally {
+      // Close the headless image browser
+      await imageBrowser.close();
     }
 
     // Perform spell check on the email content
@@ -292,7 +285,6 @@ export async function analyzeEmailContent(emailId: number, html: string): Promis
       screenshots: {
         desktop: `/uploads/analysis/${folderName}/desktop-screenshot.png`,
         mobile: `/uploads/analysis/${folderName}/mobile-screenshot.png`,
-        fullPage: `/uploads/analysis/${folderName}/desktop-screenshot.png`, // Legacy compatibility
       },
     };
   }

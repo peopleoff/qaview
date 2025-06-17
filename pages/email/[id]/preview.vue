@@ -4,7 +4,6 @@ const { id } = useRoute().params;
 // Fetch the preview HTML from the API
 const { data: previewHtml, error } = await useFetch(`/api/email/${id}/preview`, {
   server: false,
-  transform: (data: any) => data,
 });
 
 // Handle errors
@@ -23,7 +22,11 @@ useSeoMeta({
 
 <template>
   <div class="preview-container">
-    <div v-if="previewHtml" v-html="previewHtml" />
+    <div
+      v-if="previewHtml"
+      class="text-black"
+      v-html="previewHtml"
+    />
     <div v-else class="loading">
       Loading preview...
     </div>

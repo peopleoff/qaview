@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Attachment } from "@/types/Email";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,18 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-type SendlogAttachment = {
-  id: number;
-  filename: string;
-  originalName: string;
-  mimeType: string;
-  size: number;
-  path: string;
-  description: string | null;
-  createdAt: number;
-  updatedAt: number;
-};
-
 const props = defineProps<{
   emailId: number;
 }>();
@@ -29,11 +19,12 @@ const emit = defineEmits<{
   refresh: [];
 }>();
 
-const { data: attachments, refresh: refreshAttachments } = await useFetch<SendlogAttachment[]>(`/api/email/${props.emailId}/sendlogs`);
+const { data: attachments, refresh: refreshAttachments } = await useFetch<Attachment[]>(`/api/email/${props.emailId}/attachments`);
 
 const isUploading = ref(false);
 const selectedFiles = ref<FileList | null>(null);
 const description = ref("");
+const attachmentType = ref("general");
 const deletingIds = ref<Set<number>>(new Set());
 const isDragOver = ref(false);
 
@@ -92,7 +83,9 @@ async function uploadFiles() {
       formData.append("description", description.value.trim());
     }
 
-    await $fetch(`/api/email/${props.emailId}/sendlogs`, {
+    formData.append("type", attachmentType.value);
+
+    await $fetch(`/api/email/${props.emailId}/attachments`, {
       method: "POST",
       body: formData,
     });
@@ -117,7 +110,7 @@ async function deleteAttachment(attachmentId: number) {
   deletingIds.value.add(attachmentId);
 
   try {
-    await $fetch(`/api/sendlogs/${attachmentId}`, {
+    await $fetch(`/api/attachments/${attachmentId}`, {
       method: "DELETE",
     });
 
@@ -143,8 +136,8 @@ function getFileIcon(mimeType: string): string {
   <Card>
     <CardHeader>
       <div>
-        <CardTitle>Sendlog Attachments</CardTitle>
-        <CardDescription>Upload and manage sendlog screenshots</CardDescription>
+        <CardTitle>Attachments</CardTitle>
+        <CardDescription>Upload and manage files related to this email analysis</CardDescription>
       </div>
     </CardHeader>
     <CardContent>
@@ -176,6 +169,20 @@ function getFileIcon(mimeType: string): string {
               </p>
               <Badge variant="secondary" class="text-xs">
                 {{ formatFileSize(attachment.size) }}
+              </Badge>
+              <Badge
+                v-if="attachment.type && attachment.type !== 'general'"
+                variant="outline"
+                class="text-xs"
+              >
+                {{ attachment.type }}
+              </Badge>
+              <Badge
+                v-if="attachment.isEdited"
+                variant="secondary"
+                class="text-xs"
+              >
+                Edited
               </Badge>
             </div>
             <p v-if="attachment.description" class="text-sm text-muted-foreground mb-1">
@@ -245,7 +252,7 @@ function getFileIcon(mimeType: string): string {
           <div v-else class="space-y-2">
             <Icon name="lucide:upload" class="mx-auto h-12 w-12 text-muted-foreground" />
             <h3 class="text-lg font-medium text-foreground">
-              {{ attachments && attachments.length > 0 ? 'Add more sendlogs' : 'Upload sendlog screenshots' }}
+              {{ attachments && attachments.length > 0 ? 'Add more attachments' : 'Upload attachments' }}
             </h3>
             <p class="text-muted-foreground">
               Drag and drop images here, or click to select files

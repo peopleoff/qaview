@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { Link } from "@/types/Email";
 
+import EditLinkDialog from "@/components/Email/EditLinkDialog.vue";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -16,7 +18,13 @@ defineProps<{
   links: Link[];
 }>();
 
+const emit = defineEmits<{
+  (e: "linkUpdated"): void;
+}>();
+
 const selectedImage = ref<string | null>(null);
+const editDialogOpen = ref(false);
+const editingLink = ref<Link | null>(null);
 
 function openImageModal(imageSrc: string) {
   selectedImage.value = imageSrc;
@@ -24,6 +32,15 @@ function openImageModal(imageSrc: string) {
 
 function closeImageModal() {
   selectedImage.value = null;
+}
+
+function edit(link: Link) {
+  editingLink.value = link;
+  editDialogOpen.value = true;
+}
+
+function handleLinkUpdated() {
+  emit("linkUpdated");
 }
 </script>
 
@@ -44,9 +61,22 @@ function closeImageModal() {
       </TableRow>
     </TableHeader>
     <TableBody>
-      <TableRow v-for="link in links" :key="link.id">
+      <TableRow
+        v-for="link in links"
+        :key="link.id"
+        class="relative group"
+      >
         <TableCell class="font-medium truncate max-w-[200px]">
-          {{ link.text ? link.text : link.finalUrl }}
+          <div class="flex items-center gap-2">
+            {{ link.text ? link.text : link.finalUrl }}
+            <Badge
+              v-if="link.isEdited"
+              variant="secondary"
+              class="text-xs"
+            >
+              Edited
+            </Badge>
+          </div>
         </TableCell>
         <TableCell class="font-medium">
           <Badge variant="outline" :class="(link?.status ?? 0) >= 200 && (link?.status ?? 0) < 300 ? 'bg-green-500' : 'bg-red-500'">
@@ -64,6 +94,16 @@ function closeImageModal() {
             class="w-10 h-10 object-contain cursor-pointer hover:opacity-80 transition-opacity"
             @click="openImageModal(`/uploads/analysis/email-${link.emailId}/${link.screenshotPath}`)"
           >
+        </TableCell>
+        <TableCell>
+          <Button
+            variant="outline"
+            size="icon"
+            class="absolute top-1/2 -translate-y-1/2 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+            @click="edit(link)"
+          >
+            <Icon name="mdi:pencil" />
+          </Button>
         </TableCell>
       </TableRow>
     </TableBody>
@@ -90,4 +130,11 @@ function closeImageModal() {
       >
     </div>
   </div>
+
+  <!-- Edit Link Dialog -->
+  <EditLinkDialog
+    v-model:open="editDialogOpen"
+    :link="editingLink"
+    @updated="handleLinkUpdated"
+  />
 </template>

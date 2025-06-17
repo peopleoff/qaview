@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# QA Buddy - Docker Startup Script
-# This script builds and starts the QA Buddy application using Docker Compose
+# QAView - Docker Startup Script
+# This script builds and starts the QAView application using Docker Compose
 
 set -e
 
-echo "🚀 Starting QA Buddy with Docker..."
+echo "🚀 Starting QAView with Docker..."
 
 # Check if Docker is running
 if ! docker info > /dev/null 2>&1; then
@@ -20,7 +20,7 @@ if ! command -v docker-compose > /dev/null 2>&1; then
 fi
 
 # Build and start the application
-echo "📦 Building and starting QA Buddy..."
+echo "📦 Building and starting QAView..."
 docker-compose up --build -d
 
 # Wait for health check
@@ -30,7 +30,7 @@ counter=0
 
 while [ $counter -lt $timeout ]; do
     if curl -s http://localhost:3000/api/health > /dev/null 2>&1; then
-        echo "✅ QA Buddy is ready!"
+        echo "✅ QAView is ready!"
         echo "🌐 Application URL: http://localhost:3000"
         echo ""
         echo "📋 Useful commands:"
