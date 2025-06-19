@@ -114,7 +114,7 @@ export async function renderTemplate(
     "detailed-links",
     "detailed-images",
     "detailed-spell-check",
-    "sendlog-attachments",
+    "attachments",
     "qa-checklist",
     "qa-notes",
     "links-summary",

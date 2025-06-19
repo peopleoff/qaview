@@ -55,16 +55,16 @@
         </div>
     </div>
 
-    <!-- Sendlog Summary -->
+    <!-- Attachment Summary -->
     <div class="bg-purple-50 p-4 rounded mb-6">
-        <h3 class="text-lg font-medium mb-2 text-muted-foreground">Sendlog Attachments</h3>
+        <h3 class="text-lg font-medium mb-2 text-muted-foreground">Attachments</h3>
         <div class="space-y-1">
-            <div><strong>Total Attachments:</strong> {{emailData.sendlogAttachments.length}}</div>
+            <div><strong>Total Attachments:</strong> {{emailData.attachments.length}}</div>
             <div><strong>Status:</strong>
                 <span
-                    class="{{#if emailData.sendlogAttachments.length}}text-green-600{{else}}text-muted-foreground{{/if}}">
-                    {{#if emailData.sendlogAttachments.length}}{{emailData.sendlogAttachments.length}} attachment{{#if
-                    (gt emailData.sendlogAttachments.length 1)}}s{{/if}} uploaded{{else}}No attachments{{/if}}
+                    class="{{#if emailData.attachments.length}}text-green-600{{else}}text-muted-foreground{{/if}}">
+                    {{#if emailData.attachments.length}}{{emailData.attachments.length}} attachment{{#if
+                    (gt emailData.attachments.length 1)}}s{{/if}} uploaded{{else}}No attachments{{/if}}
                 </span>
             </div>
         </div>
