@@ -24,14 +24,18 @@ const { data: emailData, refresh: refreshEmail } = useAsyncData("email", () => $
 
 const isExporting = ref(false);
 const activeTab = ref("desktop");
+const loading = ref(false);
 
 async function analyzeEmail() {
+  loading.value = true;
   try {
     await $fetch(`/api/email/${id}/analyze`);
     refresh("Email analyzed");
   }
   catch (e) {
     console.error(e);
+  }finally {
+    loading.value = false;
   }
 };
 
@@ -57,8 +61,7 @@ async function deleteQa() {
 }
 
 async function refresh(message: string) {
-  await refreshEmail();
-  toast(message, {
+  await refreshEmail();  toast(message, {
     description: "The email has been refreshed.",
   });
 }
@@ -84,7 +87,7 @@ async function refresh(message: string) {
               >
                 {{ emailData.analyzed ? 'Analyzed' : 'Pending Analysis' }}
               </Badge>
-              <Button v-if="!emailData.analyzed" @click="analyzeEmail">
+              <Button v-if="!emailData.analyzed" @click="analyzeEmail" :disabled="loading" :loading="loading" class="ml-2">
                 Analyze
               </Button>
               <DropdownMenu v-else>
@@ -144,7 +147,7 @@ async function refresh(message: string) {
           </div>
           <div>
             <h3 class="text-sm font-medium text-muted-foreground">
-              Sendlogs
+              Attachments
             </h3>
             <p class="mt-1 text-lg font-medium text-foreground">
               {{ emailData.attachments?.length || 0 }}

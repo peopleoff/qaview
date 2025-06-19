@@ -119,11 +119,11 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // Convert sendlog attachments to data URLs
-  const sendlogDataUrls: Record<string, string> = {};
+  // Convert attachments to data URLs
+  const attachmentUrls: Record<string, string> = {};
   for (const attachment of emailData.attachments || []) {
     if (attachment.mimeType.startsWith("image/")) {
-      sendlogDataUrls[attachment.id] = await imageToDataUrl(attachment.path);
+      attachmentUrls[attachment.id] = await imageToDataUrl(attachment.path);
     }
   }
 
@@ -134,7 +134,7 @@ export default defineEventHandler(async (event) => {
     emailDesktopDataUrl,
     emailMobileDataUrl,
     linkScreenshots,
-    sendlogDataUrls,
+    attachmentUrls,
     linkStatusSummary,
     imageStatusSummary,
     spellCheckSummary,

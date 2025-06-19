@@ -12,8 +12,8 @@ export const attachments = sqliteTable("attachments", {
   size: integer().notNull(),
   path: text().notNull(),
   description: text(),
-  type: text().default("general"), // Type of attachment: 'sendlog', 'general', 'screenshot', etc.
-  isEdited: integer().default(0), // Track if attachment was manually edited
+  type: text().default("general"),
+  isEdited: integer().default(0),
   createdAt: integer().notNull().$default(() => Date.now()),
   updatedAt: integer().notNull().$default(() => Date.now()).$onUpdate(() => Date.now()),
 });
@@ -24,7 +24,3 @@ export const attachmentsRelations = relations(attachments, ({ one }) => ({
     references: [emails.id],
   }),
 }));
-
-// Keep the old export for backward compatibility during migration
-export const sendlogAttachments = attachments;
-export const sendlogAttachmentsRelations = attachmentsRelations;
