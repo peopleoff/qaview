@@ -1,7 +1,15 @@
 {
-  "name": "nuxt-app",
+  "name": "qaview",
   "type": "module",
+  "version": "1.0.0",
   "private": true,
+  "description": "QAVIEW",
+  "author": {
+    "name": "Ruslan Belyy",
+    "email": "ruslan@ruslanbelyy.com",
+    "url": "https://github.com/peopleoff"
+  },
+  "license": "MIT",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
