@@ -65,6 +65,11 @@ async function refresh(message: string) {
     description: "The email has been refreshed.",
   });
 }
+
+function handleEmailIdUpdated(newEmailId: string) {
+  // Refresh the email data to show the updated emailId
+  refreshEmail();
+}
 </script>
 
 <template>
@@ -120,13 +125,23 @@ async function refresh(message: string) {
         <CardDescription>Last updated: {{ new Date(emailData.updatedAt).toLocaleString() }}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div class="mb-4">
-          <h3 class="text-sm font-medium text-muted-foreground">
-            Subject
-          </h3>
-          <p class="mt-1 text-lg font-medium text-foreground">
-            {{ emailData.subject || 'No subject' }}
-          </p>
+        <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h3 class="text-sm font-medium text-muted-foreground">
+              Email ID
+            </h3>
+            <p class="mt-1 text-lg font-semibold text-foreground">
+              {{ emailData.emailId || 'No ID assigned' }}
+            </p>
+          </div>
+          <div>
+            <h3 class="text-sm font-medium text-muted-foreground">
+              Subject
+            </h3>
+            <p class="mt-1 text-lg font-medium text-foreground">
+              {{ emailData.subject || 'No subject' }}
+            </p>
+          </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
@@ -164,6 +179,15 @@ async function refresh(message: string) {
         </div>
       </CardContent>
     </Card>
+
+    <!-- Email ID Selector for handling multiple UTM campaigns -->
+    <EmailEmailIdSelector
+      v-if="emailData.analyzed"
+      :email-id="emailData.id"
+      :current-email-id="emailData.emailId"
+      @updated="handleEmailIdUpdated"
+    />
+
     <Card>
       <CardHeader>
         <CardTitle>Preview</CardTitle>

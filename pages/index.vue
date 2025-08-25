@@ -70,8 +70,9 @@ async function deleteEmail(id: string) {
               </TableCaption>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
+                  <TableHead>Email ID</TableHead>
                   <TableHead>Subject</TableHead>
+                  <TableHead>Name</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead>Actions</TableHead>
@@ -83,13 +84,16 @@ async function deleteEmail(id: string) {
                   :key="email.id"
                   class="hover:bg-muted/50"
                 >
-                  <TableCell class="font-medium underline max-w-48 truncate">
-                    <NuxtLink :to="`/email/${email.id}`">
-                      {{ email.filename }}
+                  <TableCell class="font-semibold max-w-48 truncate">
+                    <NuxtLink :to="`/email/${email.id}`" class="underline">
+                      {{ email.emailId || 'No ID' }}
                     </NuxtLink>
                   </TableCell>
-                  <TableCell class="max-w-48 truncate">
+                  <TableCell class="font-medium max-w-48 truncate">
                     {{ email.subject || 'No subject' }}
+                  </TableCell>
+                  <TableCell class="text-muted-foreground max-w-48 truncate">
+                    {{ email.filename }}
                   </TableCell>
                   <TableCell class="max-w-24 truncate">
                     <Badge :variant="email.analyzed ? 'default' : 'secondary'">

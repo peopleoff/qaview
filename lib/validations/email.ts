@@ -22,6 +22,7 @@ export const createEmailSchema = z.object({
 // Email update validation
 export const updateEmailSchema = z.object({
   subject: optionalStringSchema,
+  emailId: optionalStringSchema,
   analyzed: z.boolean().optional(),
   screenshotUrl: optionalStringSchema,
 });
