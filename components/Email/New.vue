@@ -85,7 +85,7 @@ function resetDialog() {
             @change="handleFileChange"
           >
           <p class="text-sm text-muted-foreground mt-1">
-            Select multiple .eml files to upload them all at once
+            Select multiple .eml files to upload them all at once. Email IDs will be automatically extracted during analysis.
           </p>
         </div>
 

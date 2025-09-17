@@ -10,6 +10,7 @@ import { spellErrors } from "./spellErrors";
 
 export const emails = sqliteTable("emails", {
   id: integer().primaryKey({ autoIncrement: true }),
+  emailId: text(), // QA tracking ID (e.g., TNC_DAY_8)
   filename: text().notNull(),
   filePath: text().notNull(),
   subject: text(),

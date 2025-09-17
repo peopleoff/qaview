@@ -1,5 +1,6 @@
 export type Email = {
   id: number;
+  emailId: string | null;
   filename: string;
   filePath: string;
   subject: string | null;

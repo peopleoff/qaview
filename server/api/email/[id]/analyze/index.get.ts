@@ -20,9 +20,31 @@ export default defineEventHandler(async (event) => {
   const file = await readFile(email[0].filePath, "utf-8");
   const parsed = await simpleParser(file);
   const result = await analyzeEmailContent(email[0].id, parsed.html || "");
+  
+  // Extract utm_campaign values from all links to determine emailId
+  const utmCampaigns = result.links
+    .map(link => link.utmParams?.utm_campaign)
+    .filter(campaign => campaign && campaign.trim() !== ""); // Remove null/empty values
+  
+  const uniqueCampaigns = [...new Set(utmCampaigns)];
+  
+  let extractedEmailId: string | null = null;
+  
+  if (uniqueCampaigns.length === 1) {
+    // Single unique utm_campaign found - set as emailId
+    extractedEmailId = uniqueCampaigns[0];
+  } else if (uniqueCampaigns.length > 1) {
+    // Multiple utm_campaign values found - this indicates an issue with the email
+    // For now, we'll leave emailId as null and handle this case in the UI later
+    console.warn(`Multiple utm_campaign values found for email ${email[0].id}:`, uniqueCampaigns);
+    extractedEmailId = null;
+  }
+  // If uniqueCampaigns.length === 0, no utm_campaign found, leave as null
+  
   await db.update(emails).set({
     analyzed: true,
     subject: parsed.subject || null,
+    emailId: extractedEmailId,
     screenshotUrl: result.screenshots.fullPage, // Legacy compatibility
     screenshotDesktopUrl: result.screenshots.desktop,
     screenshotMobileUrl: result.screenshots.mobile,

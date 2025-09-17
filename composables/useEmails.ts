@@ -3,6 +3,7 @@ import type { Ref } from "vue";
 
 export type Email = {
   id: string;
+  emailId?: string;
   filename: string;
   subject?: string;
   analyzed: boolean;

@@ -69,7 +69,7 @@ function parseUtmParams(url: string): Record<string, string> {
  */
 export async function analyzeEmailContent(emailId: number, html: string): Promise<EmailAnalysisResult> {
   // Create a browser instance
-  const browser = await chromium.launch({ headless: false });
+  const browser = await chromium.launch({ headless: true });
 
   try {
     // Create a new page
