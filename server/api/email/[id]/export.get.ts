@@ -169,9 +169,12 @@ export default defineEventHandler(async (event) => {
 
     await browser.close();
 
+    // Generate filename using emailId if available, fallback to database ID
+    const filename = emailData.emailId ? `${emailData.emailId}-qa.pdf` : `${id}-qa.pdf`;
+
     // Set response headers for PDF download
     setHeader(event, "Content-Type", "application/pdf");
-    setHeader(event, "Content-Disposition", `attachment; filename="email-${id}-qa-report.pdf"`);
+    setHeader(event, "Content-Disposition", `attachment; filename="${filename}"`);
 
     return pdf;
   }

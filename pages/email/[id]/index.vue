@@ -17,6 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { LoadingOverlay } from "@/components/ui/loading-overlay";
 
 const { id } = useRoute().params;
 
@@ -25,8 +26,10 @@ const { data: emailData, refresh: refreshEmail } = useAsyncData("email", () => $
 const isExporting = ref(false);
 const activeTab = ref("desktop");
 const loading = ref(false);
+const analyzing = ref(false);
 
 async function analyzeEmail() {
+  analyzing.value = true;
   loading.value = true;
   try {
     await $fetch(`/api/email/${id}/analyze`);
@@ -34,7 +37,11 @@ async function analyzeEmail() {
   }
   catch (e) {
     console.error(e);
-  }finally {
+    toast("Failed to analyze email", {
+      description: "Please try again later.",
+    });
+  } finally {
+    analyzing.value = false;
     loading.value = false;
   }
 };
@@ -70,9 +77,21 @@ function handleEmailIdUpdated(newEmailId: string) {
   // Refresh the email data to show the updated emailId
   refreshEmail();
 }
+
+function handleMetadataUpdated(data: { emailId?: string | null; subject?: string | null }) {
+  // Refresh the email data to show the updated metadata
+  refreshEmail();
+}
 </script>
 
 <template>
+  <!-- Loading Overlay -->
+  <LoadingOverlay
+    :show="analyzing"
+    title="Analyzing Email"
+    description="This may take a few moments. We're analyzing links, images, spelling, and generating screenshots."
+  />
+
   <div v-if="emailData" class="bg-background py-8 px-4 sm:px-6 lg:px-8 space-y-8">
     <Card>
       <CardHeader>
@@ -126,11 +145,19 @@ function handleEmailIdUpdated(newEmailId: string) {
       </CardHeader>
       <CardContent>
         <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <h3 class="text-sm font-medium text-muted-foreground">
-              Email ID
-            </h3>
-            <p class="mt-1 text-lg font-semibold text-foreground">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-medium text-muted-foreground">
+                Email ID
+              </h3>
+              <EmailMetadataEditor
+                :email-id="emailData.id"
+                :current-email-id="emailData.emailId"
+                :current-subject="emailData.subject"
+                @updated="handleMetadataUpdated"
+              />
+            </div>
+            <p class="text-lg font-semibold text-foreground">
               {{ emailData.emailId || 'No ID assigned' }}
             </p>
           </div>

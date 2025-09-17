@@ -18,11 +18,14 @@ onMounted(async () => {
 
     downloadStatus.value = "downloading";
 
+    // Generate filename using emailId if available, fallback to database ID
+    const filename = emailData.emailId ? `${emailData.emailId}-qa.pdf` : `${id}-qa.pdf`;
+
     // Start the download
     const downloadUrl = `/api/email/${id}/export`;
     const a = document.createElement("a");
     a.href = downloadUrl;
-    a.download = `email-${id}-qa-report.pdf`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
