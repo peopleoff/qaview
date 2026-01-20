@@ -1,0 +1,22 @@
+diff --git a/node_modules/nuxt-electron/dist/index.mjs b/node_modules/nuxt-electron/dist/index.mjs
+index 6c99b83..7bdb9f6 100644
+--- a/node_modules/nuxt-electron/dist/index.mjs
++++ b/node_modules/nuxt-electron/dist/index.mjs
+@@ -92,9 +92,15 @@ function adaptElectronConfig(options2, nuxt2) {
+   if (!options2.disableDefaultOptions) {
+     nuxt2.options.ssr = false;
+     nuxt2.options.app.baseURL = "./";
+-    nuxt2.options.app.buildAssetsDir = "/";
+     nuxt2.options.runtimeConfig.app.baseURL = "./";
+-    nuxt2.options.runtimeConfig.app.buildAssetsDir = "/";
++
++    // Only set buildAssetsDir for Nuxt < 4.0.0 to avoid H3 error
++    const nuxtVersion = nuxt2._version || '3.0.0';
++    const majorVersion = parseInt(nuxtVersion.split('.')[0], 10);
++    if (majorVersion < 4) {
++      nuxt2.options.app.buildAssetsDir = "/";
++      nuxt2.options.runtimeConfig.app.buildAssetsDir = "/";
++    }
+     if (!nuxt2.options.dev) {
+       (_a = nuxt2.options.nitro).runtimeConfig ?? (_a.runtimeConfig = {});
+       (_b = nuxt2.options.nitro.runtimeConfig).app ?? (_b.app = {});

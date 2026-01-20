@@ -1,0 +1,65 @@
+{
+  appId: "com.qaview.desktop",
+  productName: "QAView Desktop",
+  directories: {
+    output: "dist",
+    buildResources: "build"
+  },
+  files: [
+    "dist-electron/**/*",
+    ".output/**/*",
+    "lib/db/migrations/**/*",
+    "node_modules/**/*",
+    "!node_modules/playwright/.local-browsers/**/*",
+    "!node_modules/@playwright/test/**/*"
+  ],
+  extraResources: [
+    {
+      from: "electron/dictionaries",
+      to: "dictionaries"
+    }
+  ],
+  // Don't bundle Playwright browsers - they'll be downloaded on first run
+  asarUnpack: [
+    "node_modules/playwright/**/*",
+    "node_modules/playwright-core/**/*"
+  ],
+
+  // GitHub Releases publishing
+  publish: {
+    provider: "github",
+    owner: "ruslanbelyy",
+    repo: "qaview-desktop",
+    releaseType: "release"
+  },
+
+  mac: {
+    target: {
+      target: "dmg",
+      arch: ["arm64", "x64"]  // Build for both Apple Silicon and Intel
+    },
+    category: "public.app-category.developer-tools",
+    icon: "build/icon.icns",
+    identity: null  // No code signing (users will see security warning)
+  },
+  dmg: {
+    artifactName: "${productName}-${version}-${arch}.${ext}"
+  },
+  win: {
+    target: ["nsis"],
+    icon: "build/icon.ico"
+  },
+  nsis: {
+    oneClick: false,
+    allowToChangeInstallationDirectory: true,
+    artifactName: "${productName}-${version}-Setup.${ext}"
+  },
+  linux: {
+    target: ["AppImage"],
+    category: "Development",
+    icon: "build/icon.png"
+  },
+  appImage: {
+    artifactName: "${productName}-${version}.${ext}"
+  }
+}
