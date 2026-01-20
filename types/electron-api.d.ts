@@ -5,6 +5,7 @@
 
 import type {
   Email,
+  EmailWithRelations,
   NewEmail,
   Link,
   NewLink,
@@ -64,7 +65,7 @@ declare global {
       getEmails: () => Promise<IpcResponse<Email[]>>;
 
       /** Get a single email by ID with all relations */
-      getEmail: (id: number) => Promise<IpcResponse<Email | undefined>>;
+      getEmail: (id: number) => Promise<IpcResponse<EmailWithRelations | undefined>>;
 
       /** Create a new email record */
       createEmail: (data: NewEmail) => Promise<IpcResponse<Email>>;

@@ -60,7 +60,8 @@ async function removeNote(id: number) {
   }
 }
 
-function formatTimestamp(timestamp: Date): string {
+function formatTimestamp(timestamp: Date | null): string {
+  if (!timestamp) return '';
   return new Date(timestamp).toLocaleString();
 }
 

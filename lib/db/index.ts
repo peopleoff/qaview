@@ -19,7 +19,6 @@ const hasEmailsTable = sqlite.prepare(
 ).all().length > 0;
 
 if (!hasEmailsTable) {
-  console.log('First run detected, running database migrations...');
 
   let migrationsFolder: string;
   if (app.isPackaged) {
@@ -39,7 +38,6 @@ if (!hasEmailsTable) {
   if (existsSync(migrationFile)) {
     const sql = readFileSync(migrationFile, 'utf-8');
     sqlite.exec(sql);
-    console.log('Database migrations completed successfully');
   } else {
     console.error('Migration file not found:', migrationFile);
   }

@@ -35,9 +35,7 @@ export function setupIPCHandlers() {
   // ==================== Browser Management ====================
   ipcMain.handle("browser:isInstalled", async () => {
     try {
-      console.log("[IPC] browser:isInstalled called");
       const installed = browserManager.isBrowserInstalled();
-      console.log("[IPC] browser:isInstalled result:", installed);
       return { success: true, data: installed };
     } catch (error: unknown) {
       console.error("[IPC] browser:isInstalled error:", error);

@@ -55,10 +55,8 @@ async function createSourceIcon() {
 }
 
 async function generateIcons() {
-  console.log('Creating build directory...');
   mkdirSync(buildDir, { recursive: true });
 
-  console.log('Generating source icon (1024x1024)...');
   const svgBuffer = await createSourceIcon();
 
   // Generate PNG at 1024x1024
@@ -67,10 +65,8 @@ async function generateIcons() {
     .resize(1024, 1024)
     .png()
     .toFile(pngPath);
-  console.log('✓ Created icon.png');
 
   // Generate ICO for Windows (multiple sizes embedded)
-  console.log('Generating Windows icon...');
   const icoPath = join(buildDir, 'icon.ico');
 
   // Create multiple sizes for ICO
@@ -86,10 +82,7 @@ async function generateIcons() {
 
   const icoBuffer = await pngToIco(pngBuffers);
   writeFileSync(icoPath, icoBuffer);
-  console.log('✓ Created icon.ico');
 
-  // Generate ICNS for macOS using iconutil
-  console.log('Generating macOS icon...');
   const iconsetDir = join(buildDir, 'icon.iconset');
   mkdirSync(iconsetDir, { recursive: true });
 
@@ -119,7 +112,6 @@ async function generateIcons() {
     execSync(`iconutil -c icns "${iconsetDir}" -o "${join(buildDir, 'icon.icns')}"`, {
       stdio: 'inherit'
     });
-    console.log('✓ Created icon.icns');
 
     // Clean up iconset directory
     rmSync(iconsetDir, { recursive: true });
@@ -127,8 +119,6 @@ async function generateIcons() {
     console.error('Warning: Could not create .icns file. iconutil may not be available.');
     console.error('The .iconset folder has been preserved. Convert manually or on macOS.');
   }
-
-  console.log('\n✓ All icons generated in build/ directory');
 }
 
 generateIcons().catch(console.error);

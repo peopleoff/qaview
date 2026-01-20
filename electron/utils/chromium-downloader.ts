@@ -72,7 +72,6 @@ export class ChromiumDownloader {
    */
   private downloadFile(url: string, destPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      console.log("[ChromiumDownloader] Downloading from:", url);
       this.onProgress({ percent: 0, message: "Starting download..." });
 
       const makeRequest = (requestUrl: string, redirectCount = 0) => {
@@ -84,7 +83,6 @@ export class ChromiumDownloader {
         httpsGet(requestUrl, (response: IncomingMessage) => {
           // Handle redirects
           if (response.statusCode && response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
-            console.log("[ChromiumDownloader] Following redirect to:", response.headers.location);
             makeRequest(response.headers.location, redirectCount + 1);
             return;
           }
@@ -123,7 +121,6 @@ export class ChromiumDownloader {
 
           fileStream.on("finish", () => {
             fileStream.close();
-            console.log("[ChromiumDownloader] Download complete:", destPath);
             resolve();
           });
 
@@ -143,7 +140,6 @@ export class ChromiumDownloader {
    */
   private extractZip(zipPath: string, destPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      console.log("[ChromiumDownloader] Extracting to:", destPath);
       this.onProgress({ percent: 70, message: "Extracting browser files..." });
 
       // Ensure destination exists
@@ -215,7 +211,6 @@ export class ChromiumDownloader {
         });
 
         zipfile.on("end", () => {
-          console.log("[ChromiumDownloader] Extraction complete");
           resolve();
         });
 
@@ -258,7 +253,6 @@ export class ChromiumDownloader {
       if (existsSync(execPath)) {
         try {
           chmodSync(execPath, 0o755);
-          console.log("[ChromiumDownloader] Set executable permission:", execPath);
         } catch (err) {
           console.error("[ChromiumDownloader] Failed to set permission:", execPath, err);
         }
@@ -309,7 +303,6 @@ export class ChromiumDownloader {
   private writeMarkerFile(): void {
     const markerPath = join(this.browsersPath, this.getBrowserDirName(), ".installed");
     writeFileSync(markerPath, new Date().toISOString());
-    console.log("[ChromiumDownloader] Wrote marker file:", markerPath);
   }
 
   /**
@@ -345,13 +338,11 @@ export class ChromiumDownloader {
       // 7. Clean up temp zip
       try {
         await unlink(tempZipPath);
-        console.log("[ChromiumDownloader] Cleaned up temp file");
       } catch {
         console.warn("[ChromiumDownloader] Failed to clean up temp file");
       }
 
       this.onProgress({ percent: 100, message: "Installation complete!" });
-      console.log("[ChromiumDownloader] Chromium installation complete");
 
     } catch (error) {
       console.error("[ChromiumDownloader] Installation failed:", error);

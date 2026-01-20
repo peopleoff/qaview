@@ -5,8 +5,6 @@ import { fileURLToPath } from 'url';
 import { app } from 'electron';
 
 export function runMigrations(dbPath: string) {
-  console.log('Running database migrations...');
-  console.log('Database path:', dbPath);
 
   // Create database connection
   const sqlite = new Database(dbPath);
@@ -18,7 +16,6 @@ export function runMigrations(dbPath: string) {
     ).all();
 
     if (tables.length > 0) {
-      console.log('Database already migrated, skipping...');
       return;
     }
 
@@ -37,7 +34,6 @@ export function runMigrations(dbPath: string) {
       migrationsFolder = join(projectRoot, 'lib/db/migrations');
     }
 
-    console.log('Migrations folder:', migrationsFolder);
 
     // Read and execute the migration SQL file
     const migrationSQL = readFileSync(join(migrationsFolder, '0000_brief_vance_astro.sql'), 'utf-8');
@@ -45,7 +41,6 @@ export function runMigrations(dbPath: string) {
     // Execute the migration
     sqlite.exec(migrationSQL);
 
-    console.log('Database migrations completed successfully');
   } catch (error) {
     console.error('Migration failed:', error);
     throw error;

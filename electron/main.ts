@@ -10,7 +10,6 @@ const __dirname = dirname(__filename)
 
 // Remove electron security warnings only in development mode
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
-console.log(__dirname);
 let win: BrowserWindow | null = null
 const preload = join(__dirname, 'preload.js')
 const distPath = join(__dirname, '../.output/public')
@@ -34,7 +33,6 @@ async function createWindow() {
   } else {
     // In development, try VITE_DEV_SERVER_URL first, then fallback to localhost:3000
     const url = 'http://localhost:3000'
-    console.log('Loading development URL:', url)
     win.loadURL(url).catch(err => {
       console.error('Failed to load URL:', err)
     })
@@ -57,12 +55,8 @@ app.whenReady().then(async () => {
   const browserManager = new BrowserManager()
   const isBrowserInstalled = browserManager.isBrowserInstalled()
 
-  if (!isBrowserInstalled) {
-    console.log('Chromium browser not installed, user will be prompted on first analysis')
-  }
 
   createWindow()
-  console.log('userData:', app.getPath('userData'));
 })
 
 app.on('window-all-closed', () => {

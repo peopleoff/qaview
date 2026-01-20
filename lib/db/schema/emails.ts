@@ -37,3 +37,20 @@ export const emailsRelations = relations(emails, ({ many }) => ({
 // Type exports for TypeScript
 export type Email = typeof emails.$inferSelect;
 export type NewEmail = typeof emails.$inferInsert;
+
+// Type with relations for getEmail queries that include { with: {...} }
+import type { Link } from "./links";
+import type { Image } from "./images";
+import type { SpellError } from "./spellErrors";
+import type { QAChecklistItem } from "./qaChecklist";
+import type { QANote } from "./qaNotes";
+import type { Attachment } from "./attachments";
+
+export type EmailWithRelations = Email & {
+  links: Link[];
+  images: Image[];
+  spellErrors: SpellError[];
+  qaChecklist: QAChecklistItem[];
+  qaNotes: QANote[];
+  attachments: Attachment[];
+};

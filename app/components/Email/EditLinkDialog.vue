@@ -103,7 +103,16 @@ async function handleSubmit() {
       isEdited: 1,
     })
 
-    if (result.success && result.data) {
+    if (!result.success) {
+      toast.add({
+        title: 'Error',
+        description: result.error,
+        color: 'error',
+      })
+      return
+    }
+
+    if (result.data) {
       emit('updated', result.data)
       toast.add({
         title: 'Success',
@@ -111,12 +120,6 @@ async function handleSubmit() {
         color: 'success',
       })
       closeDialog()
-    } else {
-      toast.add({
-        title: 'Error',
-        description: result.error || 'Failed to update link',
-        color: 'error',
-      })
     }
   } catch (error) {
     console.error('Failed to update link:', error)

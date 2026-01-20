@@ -57,7 +57,17 @@ async function fetchEmailData() {
 
   const result = await db.getEmail(id)
 
-  if (result.success && result.data) {
+  if (!result.success) {
+    toast.add({
+      title: 'Error',
+      description: result.error,
+      color: 'error'
+    })
+    loading.value = false
+    return
+  }
+
+  if (result.data) {
     email.value = result.data
     links.value = result.data.links || []
     images.value = result.data.images || []
@@ -92,12 +102,6 @@ async function fetchEmailData() {
         screenshotDataUrl.value = screenshotResult.data ?? null
       }
     }
-  } else {
-    toast.add({
-      title: 'Error',
-      description: result.error || 'Failed to load email',
-      color: 'error'
-    })
   }
 
   loading.value = false
@@ -163,21 +167,24 @@ async function doExport() {
   try {
     const result = await db.exportPdf(String(id))
 
-    if (result.success && result.data) {
+    if (!result.success) {
+      // Don't show error toast if user cancelled
+      if (result.error !== 'Export cancelled') {
+        toast.add({
+          title: 'Error',
+          description: result.error,
+          color: 'error'
+        })
+      }
+      return
+    }
+
+    if (result.data) {
       toast.add({
         title: 'Success',
         description: `PDF exported to ${result.data.filePath}`,
         color: 'success'
       })
-    } else {
-      // Don't show error toast if user cancelled
-      if (result.error && result.error !== 'Export cancelled') {
-        toast.add({
-          title: 'Error',
-          description: result.error || 'Failed to export PDF',
-          color: 'error'
-        })
-      }
     }
   } finally {
     exporting.value = false

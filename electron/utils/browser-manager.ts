@@ -35,20 +35,15 @@ export class BrowserManager {
    * Check if Chromium browser is installed
    */
   isBrowserInstalled(): boolean {
-    console.log("[BrowserManager] Checking browser installation...");
-    console.log("[BrowserManager] Browsers path:", this.browsersPath);
 
     // Simple check: does the browsers directory exist and have content?
     if (!existsSync(this.browsersPath)) {
-      console.log("[BrowserManager] Browsers directory does not exist");
       return false;
     }
 
     try {
       const files = readdirSync(this.browsersPath);
-      console.log("[BrowserManager] Directory contents:", files);
       const hasChromium = files.some((file: string) => file.startsWith("chromium-"));
-      console.log("[BrowserManager] Chromium found:", hasChromium);
       return hasChromium;
     } catch (error) {
       console.error("[BrowserManager] Error reading browsers directory:", error);
@@ -63,8 +58,6 @@ export class BrowserManager {
   async installBrowser(
     onProgress?: (progress: { percent: number; message: string }) => void
   ): Promise<void> {
-    console.log("[BrowserManager] Starting browser installation...");
-    console.log("[BrowserManager] Browsers path:", this.browsersPath);
 
     const downloader = new ChromiumDownloader({
       browsersPath: this.browsersPath,
@@ -73,7 +66,6 @@ export class BrowserManager {
 
     try {
       await downloader.download();
-      console.log("[BrowserManager] Browser installation complete");
     } catch (error) {
       console.error("[BrowserManager] Browser installation failed:", error);
       throw new Error(

@@ -188,7 +188,7 @@ onMounted(() => {
             {{ attachment.description }}
           </p>
           <p class="text-xs text-gray-500">
-            Uploaded {{ new Date(attachment.createdAt).toLocaleDateString() }}
+            Uploaded {{ new Date(attachment.createdAt ?? Date.now()).toLocaleDateString() }}
           </p>
         </div>
 

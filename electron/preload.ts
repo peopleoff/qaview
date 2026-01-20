@@ -11,8 +11,6 @@ import type {
 } from "../lib/db/schema";
 import type { AnalysisProgress, BrowserInstallProgress } from "../types/progress";
 
-console.log('Preload script running...');
-
 // Expose protected methods that allow the renderer process to use
 // ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld("electronAPI", {
@@ -85,5 +83,3 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getPreviewHtml: (emailId: string) => ipcRenderer.invoke("email:getPreviewHtml", emailId),
   exportPdf: (emailId: string) => ipcRenderer.invoke("email:exportPdf", emailId),
 });
-
-console.log('Preload script completed. electronAPI should be available on window.');

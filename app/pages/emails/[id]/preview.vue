@@ -16,15 +16,18 @@ onMounted(async () => {
   try {
     const result = await db.getPreviewHtml(id)
 
-    if (result.success && result.data) {
-      htmlContent.value = result.data
-    } else {
-      error.value = result.error || 'Failed to load preview'
+    if (!result.success) {
+      error.value = result.error
       toast.add({
         title: 'Error',
-        description: error.value ?? undefined,
+        description: result.error,
         color: 'error',
       })
+      return
+    }
+
+    if (result.data) {
+      htmlContent.value = result.data
     }
   } catch (err) {
     console.error('Failed to load preview:', err)

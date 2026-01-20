@@ -29,15 +29,19 @@ onMounted(async () => {
 async function fetchEmails() {
   loading.value = true;
   const result = await db.getEmails();
-  console.log(result);
-  if (result.success && result.data) {
-    emails.value = result.data;
-  } else {
+
+  if (!result.success) {
     toast.add({
       title: "Error",
-      description: result.error || "Failed to load emails",
+      description: result.error,
       color: "error",
     });
+    loading.value = false;
+    return;
+  }
+
+  if (result.data) {
+    emails.value = result.data;
   }
   loading.value = false;
 }
@@ -51,19 +55,20 @@ async function confirmDelete() {
   if (!emailToDelete.value) return;
 
   const result = await db.deleteEmail(emailToDelete.value);
-  if (result.success) {
+
+  if (!result.success) {
+    toast.add({
+      title: "Error",
+      description: result.error,
+      color: "error",
+    });
+  } else {
     toast.add({
       title: "Success",
       description: "Email deleted successfully",
       color: "success",
     });
     await fetchEmails();
-  } else {
-    toast.add({
-      title: "Error",
-      description: result.error || "Failed to delete email",
-      color: "error",
-    });
   }
 
   deleteDialogOpen.value = false;
@@ -78,21 +83,24 @@ async function handleExportPdf(emailId: string) {
   try {
     const result = await db.exportPdf(emailId);
 
-    if (result.success && result.data) {
+    if (!result.success) {
+      // Don't show error toast if user cancelled
+      if (result.error !== "Export cancelled") {
+        toast.add({
+          title: "Error",
+          description: result.error,
+          color: "error",
+        });
+      }
+      return;
+    }
+
+    if (result.data) {
       toast.add({
         title: "Success",
         description: `PDF exported to ${result.data.filePath}`,
         color: "success",
       });
-    } else {
-      // Don't show error toast if user cancelled
-      if (result.error && result.error !== "Export cancelled") {
-        toast.add({
-          title: "Error",
-          description: result.error || "Failed to export PDF",
-          color: "error",
-        });
-      }
     }
   } finally {
     exportingEmails.value.delete(emailId);
