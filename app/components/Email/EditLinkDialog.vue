@@ -42,7 +42,7 @@ watch(() => props.link, async (newLink) => {
     if (newLink.screenshotPath) {
       const result = await db.getImageData(newLink.screenshotPath)
       if (result.success) {
-        screenshotPreview.value = result.data
+        screenshotPreview.value = result.data ?? null
       } else {
         screenshotPreview.value = null
       }

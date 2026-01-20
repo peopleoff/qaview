@@ -41,3 +41,5 @@ dist-electron/
 /dist/
 
 .claude/
+.claude/*
+.claude/tsc-cache/

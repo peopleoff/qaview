@@ -23,7 +23,7 @@ interface ChromiumDownloaderOptions {
 }
 
 // Chromium revision from Playwright browsers.json
-const CHROMIUM_REVISION = "1194";
+export const CHROMIUM_REVISION = "1194";
 
 // CDN URL patterns from Playwright source
 const CDN_BASE_URL = "https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium";

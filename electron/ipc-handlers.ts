@@ -6,9 +6,20 @@ import { join, basename, dirname } from "path";
 import { pathToFileURL } from "url";
 import { simpleParser } from "mailparser";
 import { analyzeEmailContent, AnalysisProgressCallback } from "./utils/email-analyzer";
-import { BrowserManager } from "./utils/browser-manager";
+import { BrowserManager, getChromiumExecutablePath } from "./utils/browser-manager";
 import { generatePdfReport, generatePdfPreviewHtml } from "./utils/pdf-generator";
 import { checkSpelling } from "./utils/spell-checker";
+import { getErrorMessage } from "../types/utils";
+import type {
+  NewEmail,
+  NewLink,
+  NewImage,
+  NewQANote,
+  Email,
+  Link,
+  Image,
+  QAChecklistItem,
+} from "../lib/db/schema";
 
 /**
  * Convert absolute file paths to file:// URLs for use in renderer process
@@ -28,9 +39,9 @@ export function setupIPCHandlers() {
       const installed = browserManager.isBrowserInstalled();
       console.log("[IPC] browser:isInstalled result:", installed);
       return { success: true, data: installed };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("[IPC] browser:isInstalled error:", error);
-      return { success: false, error: error.message };
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -41,8 +52,8 @@ export function setupIPCHandlers() {
         event.sender.send("browser:installProgress", progress);
       });
       return { success: true, message: "Browser installed successfully" };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -53,8 +64,8 @@ export function setupIPCHandlers() {
         orderBy: (emails, { desc }) => [desc(emails.createdAt)],
       });
       return { success: true, data: emails };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -72,21 +83,21 @@ export function setupIPCHandlers() {
         },
       });
       return { success: true, data: email };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
-  ipcMain.handle("db:createEmail", async (_event, data) => {
+  ipcMain.handle("db:createEmail", async (_event, data: NewEmail) => {
     try {
       const [email] = await db.insert(schema.emails).values(data).returning();
       return { success: true, data: email };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
-  ipcMain.handle("db:updateEmail", async (_event, id: number, data) => {
+  ipcMain.handle("db:updateEmail", async (_event, id: number, data: Partial<Email>) => {
     try {
       const [email] = await db
         .update(schema.emails)
@@ -94,8 +105,8 @@ export function setupIPCHandlers() {
         .where(eq(schema.emails.id, id))
         .returning();
       return { success: true, data: email };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -125,8 +136,8 @@ export function setupIPCHandlers() {
           hasNoCampaigns: availableCampaigns.length === 0,
         },
       };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -138,8 +149,8 @@ export function setupIPCHandlers() {
         .where(eq(schema.emails.id, id))
         .returning();
       return { success: true, data: email };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -173,8 +184,8 @@ export function setupIPCHandlers() {
 
       await db.delete(schema.emails).where(eq(schema.emails.id, id));
       return { success: true };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -185,12 +196,12 @@ export function setupIPCHandlers() {
         where: eq(schema.links.emailId, emailId),
       });
       return { success: true, data: links };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
-  ipcMain.handle("db:updateLink", async (_event, id: number, data) => {
+  ipcMain.handle("db:updateLink", async (_event, id: number, data: Partial<Link>) => {
     try {
       const [link] = await db
         .update(schema.links)
@@ -198,17 +209,17 @@ export function setupIPCHandlers() {
         .where(eq(schema.links.id, id))
         .returning();
       return { success: true, data: link };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
-  ipcMain.handle("db:createLinks", async (_event, links: any[]) => {
+  ipcMain.handle("db:createLinks", async (_event, links: NewLink[]) => {
     try {
       const createdLinks = await db.insert(schema.links).values(links).returning();
       return { success: true, data: createdLinks };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -219,12 +230,12 @@ export function setupIPCHandlers() {
         where: eq(schema.images.emailId, emailId),
       });
       return { success: true, data: images };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
-  ipcMain.handle("db:updateImage", async (_event, id: number, data) => {
+  ipcMain.handle("db:updateImage", async (_event, id: number, data: Partial<Image>) => {
     try {
       const [image] = await db
         .update(schema.images)
@@ -232,17 +243,17 @@ export function setupIPCHandlers() {
         .where(eq(schema.images.id, id))
         .returning();
       return { success: true, data: image };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
-  ipcMain.handle("db:createImages", async (_event, images: any[]) => {
+  ipcMain.handle("db:createImages", async (_event, images: NewImage[]) => {
     try {
       const createdImages = await db.insert(schema.images).values(images).returning();
       return { success: true, data: createdImages };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -253,12 +264,12 @@ export function setupIPCHandlers() {
         where: eq(schema.qaChecklist.emailId, emailId),
       });
       return { success: true, data: checklist };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
-  ipcMain.handle("db:updateQAChecklistItem", async (_event, id: number, data) => {
+  ipcMain.handle("db:updateQAChecklistItem", async (_event, id: number, data: Partial<QAChecklistItem>) => {
     try {
       const [item] = await db
         .update(schema.qaChecklist)
@@ -266,8 +277,8 @@ export function setupIPCHandlers() {
         .where(eq(schema.qaChecklist.id, id))
         .returning();
       return { success: true, data: item };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -278,17 +289,17 @@ export function setupIPCHandlers() {
         where: eq(schema.qaNotes.emailId, emailId),
       });
       return { success: true, data: notes };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
-  ipcMain.handle("db:createQANote", async (_event, data) => {
+  ipcMain.handle("db:createQANote", async (_event, data: NewQANote) => {
     try {
       const [note] = await db.insert(schema.qaNotes).values(data).returning();
       return { success: true, data: note };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -296,8 +307,8 @@ export function setupIPCHandlers() {
     try {
       await db.delete(schema.qaNotes).where(eq(schema.qaNotes.id, id));
       return { success: true };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -327,8 +338,8 @@ export function setupIPCHandlers() {
       );
 
       return { success: true, data: attachmentsWithData };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -345,8 +356,8 @@ export function setupIPCHandlers() {
         success: true,
         data: result.canceled ? [] : result.filePaths,
       };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -422,8 +433,8 @@ export function setupIPCHandlers() {
         success: true,
         data: uploadedAttachments,
       };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -447,8 +458,8 @@ export function setupIPCHandlers() {
       // Delete from database
       await db.delete(schema.attachments).where(eq(schema.attachments.id, id));
       return { success: true };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -459,8 +470,8 @@ export function setupIPCHandlers() {
         where: eq(schema.spellErrors.emailId, emailId),
       });
       return { success: true, data: errors };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -468,8 +479,8 @@ export function setupIPCHandlers() {
     try {
       await db.delete(schema.spellErrors).where(eq(schema.spellErrors.id, id));
       return { success: true };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -487,8 +498,8 @@ export function setupIPCHandlers() {
         success: true,
         data: result.canceled ? null : result.filePaths[0],
       };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -509,8 +520,8 @@ export function setupIPCHandlers() {
         success: true,
         data: `data:${mimeType};base64,${base64}`,
       };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -564,8 +575,8 @@ export function setupIPCHandlers() {
         message: `Email "${filename}" uploaded successfully`,
         emailId: newEmail.id,
       };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -696,9 +707,9 @@ export function setupIPCHandlers() {
           emailId: extractedEmailId,
         },
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Email analysis failed:", error);
-      return { success: false, error: error.message };
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -708,9 +719,9 @@ export function setupIPCHandlers() {
       const userDataPath = app.getPath("userData");
       const html = await generatePdfPreviewHtml(emailId, userDataPath);
       return { success: true, data: html };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("PDF preview failed:", error);
-      return { success: false, error: error.message };
+      return { success: false, error: getErrorMessage(error) };
     }
   });
 
@@ -749,7 +760,10 @@ export function setupIPCHandlers() {
 
       // Launch browser for PDF generation
       const { chromium } = await import("playwright");
-      browser = await chromium.launch({ headless: true });
+      browser = await chromium.launch({
+        headless: true,
+        executablePath: getChromiumExecutablePath()
+      });
       const page = await browser.newPage();
 
       try {
@@ -768,9 +782,9 @@ export function setupIPCHandlers() {
         // Clean up page
         await page.close();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("PDF export failed:", error);
-      return { success: false, error: error.message };
+      return { success: false, error: getErrorMessage(error) };
     } finally {
       // Clean up browser
       if (browser) {

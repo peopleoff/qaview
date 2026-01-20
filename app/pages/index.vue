@@ -99,29 +99,6 @@ async function handleExportPdf(emailId: string) {
   }
 }
 
-async function handleUpload() {
-  const selectResult = await db.selectFile();
-  if (selectResult.success && selectResult.data) {
-    // Upload the file
-    const uploadResult = await db.uploadEmail(selectResult.data);
-    if (uploadResult.success) {
-      toast.add({
-        title: "Success",
-        description: uploadResult.message,
-        color: "success",
-      });
-      // Refresh email list
-      await fetchEmails();
-    } else {
-      toast.add({
-        title: "Error",
-        description: uploadResult.error || "Failed to upload email",
-        color: "error",
-      });
-    }
-  }
-}
-
 // Table columns
 const columns: TableColumn<Email>[] = [
   {
@@ -253,11 +230,7 @@ const columns: TableColumn<Email>[] = [
           <UIcon name="i-lucide-inbox" class="w-16 h-16 mx-auto mb-4 text-gray-400" />
           <h3 class="text-lg font-semibold mb-2">No emails yet</h3>
           <p class="text-muted mb-4">Upload an .eml file to get started with QA analysis</p>
-          <UButton
-            icon="i-lucide-upload"
-            label="Upload Your First Email"
-            @click="handleUpload"
-          />
+          <UploadEmailButton label="Upload Your First Email" />
         </div>
 
         <!-- Table -->

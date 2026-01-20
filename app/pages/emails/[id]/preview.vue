@@ -22,7 +22,7 @@ onMounted(async () => {
       error.value = result.error || 'Failed to load preview'
       toast.add({
         title: 'Error',
-        description: error.value,
+        description: error.value ?? undefined,
         color: 'error',
       })
     }
@@ -52,7 +52,7 @@ function goBack() {
         <UButton
           icon="i-lucide-arrow-left"
           variant="ghost"
-          color="white"
+          color="neutral"
           @click="goBack"
         />
         <h1 class="text-lg font-semibold">Export Preview</h1>

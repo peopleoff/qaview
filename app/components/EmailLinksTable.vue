@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { h, resolveComponent } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
-import type { Link } from '@@/lib/db/schema/links'
+import type { Link, UtmParams } from '@@/lib/db/schema/links'
 
 interface Props {
   links: Link[]
@@ -61,7 +61,7 @@ const columns: TableColumn<Link>[] = [
     id: 'utm_medium',
     header: 'utm_medium',
     cell: ({ row }) => {
-      const utmParams = row.original.utmParams
+      const utmParams = row.original.utmParams as UtmParams | null
       return h('span', { class: 'text-sm' }, [utmParams?.utm_medium || '-'])
     }
   },
@@ -69,7 +69,7 @@ const columns: TableColumn<Link>[] = [
     id: 'utm_campaign',
     header: 'utm_campaign',
     cell: ({ row }) => {
-      const utmParams = row.original.utmParams
+      const utmParams = row.original.utmParams as UtmParams | null
       return h('span', { class: 'text-sm' }, [utmParams?.utm_campaign || '-'])
     }
   },
@@ -77,7 +77,7 @@ const columns: TableColumn<Link>[] = [
     id: 'utm_source',
     header: 'utm_source',
     cell: ({ row }) => {
-      const utmParams = row.original.utmParams
+      const utmParams = row.original.utmParams as UtmParams | null
       return h('span', { class: 'text-sm' }, [utmParams?.utm_source || '-'])
     }
   },
@@ -85,7 +85,7 @@ const columns: TableColumn<Link>[] = [
     id: 'utm_content',
     header: 'utm_content',
     cell: ({ row }) => {
-      const utmParams = row.original.utmParams
+      const utmParams = row.original.utmParams as UtmParams | null
       return h('span', { class: 'text-sm' }, [utmParams?.utm_content || '-'])
     }
   },

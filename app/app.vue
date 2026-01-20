@@ -13,11 +13,7 @@
         <UBreadcrumb :items="breadcrumbs" />
 
         <template #right>
-          <UButton
-            icon="i-lucide-upload"
-            label="Upload Email"
-            @click="handleUpload"
-          />
+          <UploadEmailButton />
         </template>
       </UHeader>
 
@@ -39,8 +35,6 @@
 import type { BreadcrumbItem } from '@nuxt/ui'
 
 const route = useRoute()
-const db = useDatabase()
-const toast = useToast()
 const { checkBrowserInstalled, ensureBrowserInstalled } = useBrowserSetup()
 
 // Dynamic breadcrumbs based on current route
@@ -62,29 +56,6 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => {
 
   return items
 })
-
-// Handle email upload from header
-async function handleUpload() {
-  const selectResult = await db.selectFile()
-  if (selectResult.success && selectResult.data) {
-    const uploadResult = await db.uploadEmail(selectResult.data)
-    if (uploadResult.success) {
-      toast.add({
-        title: 'Success',
-        description: uploadResult.message,
-        color: 'success'
-      })
-      // Redirect to the newly uploaded email
-      await navigateTo(`/emails/${uploadResult.emailId}`)
-    } else {
-      toast.add({
-        title: 'Error',
-        description: uploadResult.error || 'Failed to upload email',
-        color: 'error'
-      })
-    }
-  }
-}
 
 // Check browser installation only once per app launch
 // Use a flag stored in sessionStorage to prevent repeated checks

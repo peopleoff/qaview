@@ -1,7 +1,6 @@
 import { readFile } from "node:fs/promises";
-import { join, dirname } from "node:path";
+import { join } from "node:path";
 import { app } from "electron";
-import { fileURLToPath } from "node:url";
 import Typo from "typo-js";
 
 export type SpellingError = {
@@ -21,7 +20,7 @@ let dictionary: Typo | null = null;
 
 /**
  * Get the path to dictionary files
- * In development: relative to this file
+ * In development: relative to app root
  * In production: relative to app resources
  */
 function getDictionaryDir(): string {
@@ -30,8 +29,8 @@ function getDictionaryDir(): string {
     return join(process.resourcesPath, "dictionaries");
   } else {
     // In development, dictionaries are in electron/dictionaries
-    const __dirname = dirname(fileURLToPath(import.meta.url));
-    return join(__dirname, "..", "dictionaries");
+    // app.getAppPath() returns project root, works correctly after bundling
+    return join(app.getAppPath(), "electron", "dictionaries");
   }
 }
 

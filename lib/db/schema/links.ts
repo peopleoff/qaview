@@ -31,6 +31,21 @@ export const linksRelations = relations(links, ({ one }) => ({
   }),
 }));
 
+// UTM parameters interface
+export interface UtmParams {
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_content?: string;
+  utm_term?: string;
+  [key: string]: string | undefined;
+}
+
 // Type exports for TypeScript
 export type Link = typeof links.$inferSelect;
 export type NewLink = typeof links.$inferInsert;
+
+// Helper type for Link with typed UTM params
+export type LinkWithUtmParams = Omit<Link, 'utmParams'> & {
+  utmParams: UtmParams | null;
+};

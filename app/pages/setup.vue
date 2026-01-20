@@ -107,7 +107,7 @@
             </UButton>
             <UButton
               v-if="error"
-              color="red"
+              color="error"
               @click="startDownload"
             >
               <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" />
@@ -128,6 +128,9 @@
 </template>
 
 <script setup lang="ts">
+import type { BrowserInstallProgress } from "@@/types/progress";
+import { getErrorMessage } from "@@/types/utils";
+
 definePageMeta({
   layout: false, // Use no layout for setup page
 });
@@ -137,14 +140,14 @@ const router = useRouter();
 const isDownloading = ref(false);
 const downloadComplete = ref(false);
 const error = ref<string | null>(null);
-const progress = ref({
+const progress = ref<BrowserInstallProgress>({
   percent: 0,
   message: "Preparing download...",
 });
 
 // Listen for progress updates
-if (process.client && window.electronAPI) {
-  window.electronAPI.onBrowserInstallProgress((progressData: any) => {
+if (import.meta.client && window.electronAPI) {
+  window.electronAPI.onBrowserInstallProgress((progressData: BrowserInstallProgress) => {
     progress.value = progressData;
   });
 }
@@ -170,8 +173,8 @@ async function startDownload() {
       error.value = result.error || "Installation failed";
       isDownloading.value = false;
     }
-  } catch (err: any) {
-    error.value = err.message || "An unexpected error occurred";
+  } catch (err: unknown) {
+    error.value = getErrorMessage(err);
     isDownloading.value = false;
   }
 }

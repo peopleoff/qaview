@@ -1,4 +1,15 @@
 import { contextBridge, ipcRenderer } from "electron";
+import type {
+  NewEmail,
+  NewLink,
+  NewImage,
+  NewQANote,
+  Email,
+  Link,
+  Image,
+  QAChecklistItem,
+} from "../lib/db/schema";
+import type { AnalysisProgress, BrowserInstallProgress } from "../types/progress";
 
 console.log('Preload script running...');
 
@@ -8,15 +19,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // Browser management
   isBrowserInstalled: () => ipcRenderer.invoke("browser:isInstalled"),
   installBrowser: () => ipcRenderer.invoke("browser:install"),
-  onBrowserInstallProgress: (callback: (progress: any) => void) => {
+  onBrowserInstallProgress: (callback: (progress: BrowserInstallProgress) => void) => {
     ipcRenderer.on("browser:installProgress", (_event, progress) => callback(progress));
   },
-  onAnalysisProgress: (callback: (progress: {
-    stage: 'parsing' | 'screenshots' | 'links' | 'images' | 'complete';
-    message: string;
-    current?: number;
-    total?: number;
-  }) => void) => {
+  onAnalysisProgress: (callback: (progress: AnalysisProgress) => void) => {
     ipcRenderer.on("email:analysisProgress", (_event, progress) => callback(progress));
   },
   removeAnalysisProgressListener: () => {
@@ -26,32 +32,32 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // Email operations
   getEmails: () => ipcRenderer.invoke("db:getEmails"),
   getEmail: (id: number) => ipcRenderer.invoke("db:getEmail", id),
-  createEmail: (data: any) => ipcRenderer.invoke("db:createEmail", data),
-  updateEmail: (id: number, data: any) =>
+  createEmail: (data: NewEmail) => ipcRenderer.invoke("db:createEmail", data),
+  updateEmail: (id: number, data: Partial<Email>) =>
     ipcRenderer.invoke("db:updateEmail", id, data),
   deleteEmail: (id: number) => ipcRenderer.invoke("db:deleteEmail", id),
 
   // Link operations
   getLinks: (emailId: number) => ipcRenderer.invoke("db:getLinks", emailId),
-  updateLink: (id: number, data: any) =>
+  updateLink: (id: number, data: Partial<Link>) =>
     ipcRenderer.invoke("db:updateLink", id, data),
-  createLinks: (links: any[]) => ipcRenderer.invoke("db:createLinks", links),
+  createLinks: (links: NewLink[]) => ipcRenderer.invoke("db:createLinks", links),
 
   // Image operations
   getImages: (emailId: number) => ipcRenderer.invoke("db:getImages", emailId),
-  updateImage: (id: number, data: any) =>
+  updateImage: (id: number, data: Partial<Image>) =>
     ipcRenderer.invoke("db:updateImage", id, data),
-  createImages: (images: any[]) => ipcRenderer.invoke("db:createImages", images),
+  createImages: (images: NewImage[]) => ipcRenderer.invoke("db:createImages", images),
 
   // QA Checklist operations
   getQAChecklist: (emailId: number) =>
     ipcRenderer.invoke("db:getQAChecklist", emailId),
-  updateQAChecklistItem: (id: number, data: any) =>
+  updateQAChecklistItem: (id: number, data: Partial<QAChecklistItem>) =>
     ipcRenderer.invoke("db:updateQAChecklistItem", id, data),
 
   // QA Notes operations
   getQANotes: (emailId: number) => ipcRenderer.invoke("db:getQANotes", emailId),
-  createQANote: (data: any) => ipcRenderer.invoke("db:createQANote", data),
+  createQANote: (data: NewQANote) => ipcRenderer.invoke("db:createQANote", data),
   deleteQANote: (id: number) => ipcRenderer.invoke("db:deleteQANote", id),
 
   // Attachments operations

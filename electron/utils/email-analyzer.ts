@@ -6,6 +6,7 @@ import {
   UtmParams,
 } from "../types/email-analysis";
 import { ScreenshotManager } from "./screenshot-manager";
+import { getChromiumExecutablePath } from "./browser-manager";
 
 /**
  * Parse UTM parameters from a URL
@@ -56,7 +57,10 @@ export async function analyzeEmailContent(
     onProgress?.({ stage: 'parsing', message: 'Loading email content...' });
 
     // Launch browser (visible to user so they can see links being clicked)
-    browser = await chromium.launch({ headless: false });
+    browser = await chromium.launch({
+      headless: false,
+      executablePath: getChromiumExecutablePath()
+    });
     const context = await browser.newContext();
     const page = await context.newPage();
 
@@ -228,7 +232,10 @@ export async function analyzeEmailContent(
 
     // Validate images with separate headless browser
     onProgress?.({ stage: 'images', message: 'Validating images...', current: 0, total: images.length });
-    const imageBrowser = await chromium.launch({ headless: true });
+    const imageBrowser = await chromium.launch({
+      headless: true,
+      executablePath: getChromiumExecutablePath()
+    });
 
     try {
       for (let i = 0; i < images.length; i++) {

@@ -1,7 +1,26 @@
 import { existsSync, readdirSync } from "fs";
 import { join } from "path";
 import { app } from "electron";
-import { ChromiumDownloader } from "./chromium-downloader";
+import { ChromiumDownloader, CHROMIUM_REVISION } from "./chromium-downloader";
+
+/**
+ * Get the platform-specific path to the Chromium executable.
+ * This is needed because Playwright reads PLAYWRIGHT_BROWSERS_PATH at module
+ * import time, not at launch time. By providing executablePath explicitly,
+ * we ensure the correct browser is used regardless of when the env var was set.
+ */
+export function getChromiumExecutablePath(): string {
+  const browsersPath = join(app.getPath("userData"), "playwright-browsers");
+  const browserDir = join(browsersPath, `chromium-${CHROMIUM_REVISION}`);
+
+  if (process.platform === "win32") {
+    return join(browserDir, "chrome-win", "chrome.exe");
+  } else if (process.platform === "darwin") {
+    return join(browserDir, "chrome-mac", "Chromium.app", "Contents", "MacOS", "Chromium");
+  }
+  // Linux
+  return join(browserDir, "chrome-linux", "chrome");
+}
 
 export class BrowserManager {
   private browsersPath: string;

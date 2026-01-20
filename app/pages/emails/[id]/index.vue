@@ -5,6 +5,7 @@ import type { Image } from '@@/lib/db/schema/images'
 import type { QAChecklistItem } from '@@/lib/db/schema/qaChecklist'
 import type { QANote } from '@@/lib/db/schema/qaNotes'
 import type { SpellError } from '@@/lib/db/schema/spellErrors'
+import type { Attachment } from '@@/lib/db/schema/attachments'
 
 const route = useRoute()
 const db = useDatabase()
@@ -20,11 +21,13 @@ const images = ref<Image[]>([])
 const qaChecklist = ref<QAChecklistItem[]>([])
 const qaNotes = ref<QANote[]>([])
 const spellErrors = ref<SpellError[]>([])
+const attachments = ref<Attachment[]>([])
 const loading = ref(true)
 const analyzing = ref(false)
 const selectedImage = ref<string | null>(null)
 const exporting = ref(false)
 const metadataEditorOpen = ref(false)
+const exportConfirmOpen = ref(false)
 
 // Analysis progress tracking
 const analysisProgress = ref<{
@@ -38,6 +41,15 @@ const analysisProgress = ref<{
 const screenshotDesktopDataUrl = ref<string | null>(null)
 const screenshotMobileDataUrl = ref<string | null>(null)
 const screenshotDataUrl = ref<string | null>(null)
+
+// Export validation computed properties
+const incompleteChecklistItems = computed(() =>
+  qaChecklist.value.filter(item => !item.completed)
+)
+const hasSendLogs = computed(() => attachments.value.length > 0)
+const isExportReady = computed(() =>
+  incompleteChecklistItems.value.length === 0 && hasSendLogs.value
+)
 
 // Fetch email data
 async function fetchEmailData() {
@@ -53,25 +65,31 @@ async function fetchEmailData() {
     qaNotes.value = result.data.qaNotes || []
     spellErrors.value = result.data.spellErrors || []
 
+    // Load attachments
+    const attachmentsResult = await db.getAttachments(id)
+    if (attachmentsResult.success) {
+      attachments.value = attachmentsResult.data || []
+    }
+
     // Load screenshot images as data URLs
     if (result.data.screenshotDesktopUrl) {
       const desktopResult = await db.getImageData(result.data.screenshotDesktopUrl)
       if (desktopResult.success) {
-        screenshotDesktopDataUrl.value = desktopResult.data
+        screenshotDesktopDataUrl.value = desktopResult.data ?? null
       }
     }
 
     if (result.data.screenshotMobileUrl) {
       const mobileResult = await db.getImageData(result.data.screenshotMobileUrl)
       if (mobileResult.success) {
-        screenshotMobileDataUrl.value = mobileResult.data
+        screenshotMobileDataUrl.value = mobileResult.data ?? null
       }
     }
 
     if (result.data.screenshotUrl) {
       const screenshotResult = await db.getImageData(result.data.screenshotUrl)
       if (screenshotResult.success) {
-        screenshotDataUrl.value = screenshotResult.data
+        screenshotDataUrl.value = screenshotResult.data ?? null
       }
     }
   } else {
@@ -128,6 +146,18 @@ async function analyzeEmail() {
 async function exportPdf() {
   if (!email.value) return
 
+  // Check if confirmation needed
+  if (!isExportReady.value) {
+    exportConfirmOpen.value = true
+    return
+  }
+
+  // Proceed with export directly
+  await doExport()
+}
+
+// Actual export logic
+async function doExport() {
   exporting.value = true
 
   try {
@@ -152,6 +182,12 @@ async function exportPdf() {
   } finally {
     exporting.value = false
   }
+}
+
+// Handle export confirmation
+function handleExportConfirm() {
+  exportConfirmOpen.value = false
+  doExport()
 }
 
 // QA Checklist handlers
@@ -236,6 +272,11 @@ function handleMetadataUpdated(updatedEmail: Email) {
   }
 }
 
+// Navigation
+function goToPreview() {
+  navigateTo(`/emails/${id}/preview`)
+}
+
 // Tabs for preview
 const previewTabs = [
   { key: 'desktop', label: 'Desktop (800px)', icon: 'i-lucide-monitor' },
@@ -298,7 +339,7 @@ onMounted(() => {
                   icon="i-lucide-eye"
                   label="Preview"
                   variant="ghost"
-                  @click="navigateTo(`/emails/${id}/preview`)"
+                  @click="goToPreview"
                 />
                 <UButton
                   v-if="email.analyzed"
@@ -315,15 +356,15 @@ onMounted(() => {
           <div class="space-y-6">
             <!-- Email Metadata -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
+              <div class="break-all">
                 <h3 class="text-sm font-medium text-muted-foreground mb-1">Email ID</h3>
                 <p class="text-lg font-medium font-mono">{{ email.emailId || 'Not set' }}</p>
               </div>
-              <div>
+              <div class="break-all">
                 <h3 class="text-sm font-medium text-muted-foreground mb-1">Subject</h3>
                 <p class="text-lg font-medium">{{ email.subject || 'No subject' }}</p>
               </div>
-              <div>
+              <div class="break-all">
                 <h3 class="text-sm font-medium text-muted-foreground mb-1">Filename</h3>
                 <p class="text-lg font-medium">{{ email.filename }}</p>
               </div>
@@ -457,6 +498,15 @@ onMounted(() => {
       :email="email"
       @update:open="metadataEditorOpen = $event"
       @updated="handleMetadataUpdated"
+    />
+
+    <!-- Export Confirmation Dialog -->
+    <ExportConfirmDialog
+      :open="exportConfirmOpen"
+      :incomplete-items="incompleteChecklistItems"
+      :has-send-logs="hasSendLogs"
+      @update:open="exportConfirmOpen = $event"
+      @confirm="handleExportConfirm"
     />
 
     <!-- Analysis Progress Modal -->

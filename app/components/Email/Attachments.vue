@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import type { AttachmentWithData } from "@@/types/electron-api.d.ts";
+
 const props = defineProps<{
   emailId: number;
 }>();
 
 const { getAttachments, selectAttachments, createAttachments, deleteAttachment } = useDatabase();
 
-const attachments = ref<any[]>([]);
+const attachments = ref<AttachmentWithData[]>([]);
 const isUploading = ref(false);
 const isLoading = ref(true);
 const deletingIds = ref<Set<number>>(new Set());
@@ -163,7 +165,7 @@ onMounted(() => {
             <p class="text-sm font-medium truncate">
               {{ attachment.originalName }}
             </p>
-            <UBadge color="gray" variant="subtle" size="xs">
+            <UBadge color="neutral" variant="subtle" size="xs">
               {{ formatFileSize(attachment.size) }}
             </UBadge>
             <UBadge
@@ -175,7 +177,7 @@ onMounted(() => {
             </UBadge>
             <UBadge
               v-if="attachment.isEdited"
-              color="gray"
+              color="neutral"
               variant="subtle"
               size="xs"
             >
@@ -195,7 +197,7 @@ onMounted(() => {
           <UButton
             variant="ghost"
             size="xs"
-            color="red"
+            color="error"
             :disabled="deletingIds.has(attachment.id)"
             @click="removeAttachment(attachment.id)"
           >

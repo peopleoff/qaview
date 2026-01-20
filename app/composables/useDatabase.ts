@@ -1,10 +1,19 @@
 // Composable for database operations via Electron IPC
+import type {
+  NewEmail,
+  Email,
+  Link,
+  Image,
+  QAChecklistItem,
+  NewQANote,
+} from "@@/lib/db/schema";
+
 export const useDatabase = () => {
   console.log('useDatabase called');
   console.log('process.client:', import.meta.client);
   console.log('window:', typeof window !== 'undefined' ? window : 'undefined');
   console.log('window.electronAPI:', typeof window !== 'undefined' ? window.electronAPI : 'undefined');
-  
+
   const api = import.meta.client ? window.electronAPI : null;
 
   if (!api && import.meta.client) {
@@ -22,12 +31,12 @@ export const useDatabase = () => {
     return await api.getEmail(id);
   };
 
-  const createEmail = async (data: any) => {
+  const createEmail = async (data: NewEmail) => {
     if (!api) return { success: false, error: "API not available" };
     return await api.createEmail(data);
   };
 
-  const updateEmail = async (id: number, data: any) => {
+  const updateEmail = async (id: number, data: Partial<Email>) => {
     if (!api) return { success: false, error: "API not available" };
     return await api.updateEmail(id, data);
   };
@@ -43,7 +52,7 @@ export const useDatabase = () => {
     return await api.getLinks(emailId);
   };
 
-  const updateLink = async (id: number, data: any) => {
+  const updateLink = async (id: number, data: Partial<Link>) => {
     if (!api) return { success: false, error: "API not available" };
     return await api.updateLink(id, data);
   };
@@ -54,7 +63,7 @@ export const useDatabase = () => {
     return await api.getImages(emailId);
   };
 
-  const updateImage = async (id: number, data: any) => {
+  const updateImage = async (id: number, data: Partial<Image>) => {
     if (!api) return { success: false, error: "API not available" };
     return await api.updateImage(id, data);
   };
@@ -65,7 +74,7 @@ export const useDatabase = () => {
     return await api.getQAChecklist(emailId);
   };
 
-  const updateQAChecklistItem = async (id: number, data: any) => {
+  const updateQAChecklistItem = async (id: number, data: Partial<QAChecklistItem>) => {
     if (!api) return { success: false, error: "API not available" };
     return await api.updateQAChecklistItem(id, data);
   };
@@ -76,7 +85,7 @@ export const useDatabase = () => {
     return await api.getQANotes(emailId);
   };
 
-  const createQANote = async (data: any) => {
+  const createQANote = async (data: NewQANote) => {
     if (!api) return { success: false, error: "API not available" };
     return await api.createQANote(data);
   };

@@ -29,3 +29,7 @@ export const attachmentsRelations = relations(attachments, ({ one }) => ({
     references: [emails.id],
   }),
 }));
+
+// Type exports for TypeScript
+export type Attachment = typeof attachments.$inferSelect;
+export type NewAttachment = typeof attachments.$inferInsert;

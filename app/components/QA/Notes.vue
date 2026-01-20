@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { QANote } from "@@/lib/db/schema";
+
 const props = defineProps<{
   emailId: number;
 }>();
@@ -7,7 +9,7 @@ const { getQANotes, createQANote, deleteQANote } = useDatabase();
 
 const newNoteText = ref("");
 const isEditing = ref(false);
-const notes = ref<any[]>([]);
+const notes = ref<QANote[]>([]);
 const isLoading = ref(true);
 const noteTextarea = ref<HTMLTextAreaElement | null>(null);
 
