@@ -3,7 +3,6 @@ import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { setupIPCHandlers } from './ipc-handlers'
 import { BrowserManager } from './utils/browser-manager'
-import { runMigrations } from '../lib/db/migrate'
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url)
@@ -51,17 +50,7 @@ async function createWindow() {
 }
 
 app.whenReady().then(async () => {
-  // Run database migrations on startup
-  const userDataPath = app.getPath('userData');
-  const dbPath = join(userDataPath, 'qaview.db');
-
-  try {
-    runMigrations(dbPath);
-  } catch (error) {
-    console.error('Failed to run database migrations:', error);
-  }
-
-  // Set up IPC handlers
+  // Set up IPC handlers (migrations run automatically in lib/db/index.ts)
   setupIPCHandlers()
 
   // Check if browser is installed on first run
