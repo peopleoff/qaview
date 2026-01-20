@@ -26,6 +26,14 @@ const selectedImage = ref<string | null>(null)
 const exporting = ref(false)
 const metadataEditorOpen = ref(false)
 
+// Analysis progress tracking
+const analysisProgress = ref<{
+  stage: 'parsing' | 'screenshots' | 'links' | 'images' | 'complete';
+  message: string;
+  current?: number;
+  total?: number;
+} | null>(null)
+
 // Data URLs for screenshots
 const screenshotDesktopDataUrl = ref<string | null>(null)
 const screenshotMobileDataUrl = ref<string | null>(null)
@@ -80,25 +88,40 @@ async function fetchEmailData() {
 // Analyze email
 async function analyzeEmail() {
   analyzing.value = true
+  analysisProgress.value = { stage: 'parsing', message: 'Starting analysis...' }
 
-  const result = await db.analyzeEmail(id)
-
-  if (result.success) {
-    toast.add({
-      title: 'Success',
-      description: 'Email analyzed successfully',
-      color: 'success'
-    })
-    await fetchEmailData()
-  } else {
-    toast.add({
-      title: 'Error',
-      description: result.error || 'Failed to analyze email',
-      color: 'error'
+  // Set up progress listener
+  if (import.meta.client && window.electronAPI) {
+    window.electronAPI.onAnalysisProgress((progress) => {
+      analysisProgress.value = progress
     })
   }
 
-  analyzing.value = false
+  try {
+    const result = await db.analyzeEmail(id)
+
+    if (result.success) {
+      toast.add({
+        title: 'Success',
+        description: 'Email analyzed successfully',
+        color: 'success'
+      })
+      await fetchEmailData()
+    } else {
+      toast.add({
+        title: 'Error',
+        description: result.error || 'Failed to analyze email',
+        color: 'error'
+      })
+    }
+  } finally {
+    // Clean up progress listener
+    if (import.meta.client && window.electronAPI?.removeAnalysisProgressListener) {
+      window.electronAPI.removeAnalysisProgressListener()
+    }
+    analyzing.value = false
+    analysisProgress.value = null
+  }
 }
 
 // Export email to PDF
@@ -226,33 +249,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-background">
-    <div class="container mx-auto py-8 px-4 space-y-6">
-      <!-- Loading State -->
-      <div v-if="loading" class="flex items-center justify-center py-12">
-        <UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin" />
-      </div>
+  <div class="space-y-6">
+    <!-- Loading State -->
+    <div v-if="loading" class="flex items-center justify-center py-12">
+      <UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin" />
+    </div>
 
-      <!-- Email Details -->
-      <template v-else-if="email">
-        <!-- Header -->
-        <div class="mb-8">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h1 class="text-3xl font-bold">Email Analysis</h1>
-              <p class="text-muted mt-1">Last updated: {{ email.updatedAt ? new Date(email.updatedAt).toLocaleString() : 'N/A' }}</p>
-            </div>
-            <UButton
-              icon="i-lucide-arrow-left"
-              label="Back to List"
-              variant="ghost"
-              @click="navigateTo('/')"
-            />
-          </div>
-        </div>
-
-        <!-- UTM Campaign Conflict Resolution -->
-        <EmailEmailIdSelector
+    <!-- Email Details -->
+    <template v-else-if="email">
+      <!-- UTM Campaign Conflict Resolution -->
+        <EmailIdSelector
           v-if="email.analyzed"
           :email-db-id="id"
           :current-email-id="email.emailId"
@@ -441,7 +447,6 @@ onMounted(() => {
           @click="navigateTo('/')"
         />
       </div>
-    </div>
 
     <!-- Image Modal -->
     <ImageModal :image-url="selectedImage" @close="closeImageModal" />
@@ -453,5 +458,95 @@ onMounted(() => {
       @update:open="metadataEditorOpen = $event"
       @updated="handleMetadataUpdated"
     />
+
+    <!-- Analysis Progress Modal -->
+    <Teleport to="body">
+      <div
+        v-if="analyzing && analysisProgress"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      >
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-8 max-w-md w-full mx-4">
+          <div class="text-center">
+            <!-- Animated Icon based on stage -->
+            <div class="mb-6">
+              <div v-if="analysisProgress.stage === 'parsing'" class="flex justify-center">
+                <UIcon name="i-lucide-file-text" class="w-16 h-16 text-blue-500 animate-pulse" />
+              </div>
+              <div v-else-if="analysisProgress.stage === 'screenshots'" class="flex justify-center">
+                <UIcon name="i-lucide-camera" class="w-16 h-16 text-purple-500 animate-pulse" />
+              </div>
+              <div v-else-if="analysisProgress.stage === 'links'" class="flex justify-center">
+                <UIcon name="i-lucide-link" class="w-16 h-16 text-green-500 animate-bounce" />
+              </div>
+              <div v-else-if="analysisProgress.stage === 'images'" class="flex justify-center">
+                <UIcon name="i-lucide-image" class="w-16 h-16 text-orange-500 animate-pulse" />
+              </div>
+              <div v-else-if="analysisProgress.stage === 'complete'" class="flex justify-center">
+                <UIcon name="i-lucide-check-circle" class="w-16 h-16 text-green-500" />
+              </div>
+            </div>
+
+            <!-- Stage Title -->
+            <h3 class="text-xl font-semibold mb-2">
+              <span v-if="analysisProgress.stage === 'parsing'">Parsing Email</span>
+              <span v-else-if="analysisProgress.stage === 'screenshots'">Taking Screenshots</span>
+              <span v-else-if="analysisProgress.stage === 'links'">Validating Links</span>
+              <span v-else-if="analysisProgress.stage === 'images'">Checking Images</span>
+              <span v-else-if="analysisProgress.stage === 'complete'">Complete!</span>
+            </h3>
+
+            <!-- Progress Message -->
+            <p class="text-gray-600 dark:text-gray-400 mb-4">
+              {{ analysisProgress.message }}
+            </p>
+
+            <!-- Progress Bar (for links/images with counts) -->
+            <div
+              v-if="analysisProgress.current !== undefined && analysisProgress.total !== undefined && analysisProgress.total > 0"
+              class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2"
+            >
+              <div
+                class="h-2 rounded-full transition-all duration-300"
+                :class="{
+                  'bg-green-500': analysisProgress.stage === 'links',
+                  'bg-orange-500': analysisProgress.stage === 'images',
+                  'bg-blue-500': analysisProgress.stage === 'parsing',
+                }"
+                :style="{ width: `${(analysisProgress.current / analysisProgress.total) * 100}%` }"
+              />
+            </div>
+
+            <!-- Stage Progress Indicator -->
+            <div class="flex justify-center gap-2 mt-6">
+              <div
+                class="w-3 h-3 rounded-full"
+                :class="analysisProgress.stage === 'parsing' || ['screenshots', 'links', 'images', 'complete'].includes(analysisProgress.stage) ? 'bg-blue-500' : 'bg-gray-300'"
+              />
+              <div
+                class="w-3 h-3 rounded-full"
+                :class="['screenshots', 'links', 'images', 'complete'].includes(analysisProgress.stage) ? 'bg-purple-500' : 'bg-gray-300'"
+              />
+              <div
+                class="w-3 h-3 rounded-full"
+                :class="['links', 'images', 'complete'].includes(analysisProgress.stage) ? 'bg-green-500' : 'bg-gray-300'"
+              />
+              <div
+                class="w-3 h-3 rounded-full"
+                :class="['images', 'complete'].includes(analysisProgress.stage) ? 'bg-orange-500' : 'bg-gray-300'"
+              />
+              <div
+                class="w-3 h-3 rounded-full"
+                :class="analysisProgress.stage === 'complete' ? 'bg-green-500' : 'bg-gray-300'"
+              />
+            </div>
+
+            <!-- Hint about visible browser -->
+            <p class="text-xs text-gray-500 dark:text-gray-500 mt-4">
+              A browser window will open so you can see links being validated
+            </p>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>

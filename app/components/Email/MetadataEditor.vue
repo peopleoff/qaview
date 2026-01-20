@@ -100,21 +100,23 @@ async function handleSubmit() {
       </div>
     </template>
 
-    <div class="space-y-4 p-4">
-      <UFormField label="Email ID" :error="errors.emailId" hint="Used for tracking and PDF export naming">
-        <UInput
-          v-model="form.emailId"
-          placeholder="e.g., campaign-2024-winter"
-        />
-      </UFormField>
+    <template #body>
+      <div class="space-y-4">
+        <UFormField label="Email ID" :error="errors.emailId" hint="Used for tracking and PDF export naming">
+          <UInput
+            v-model="form.emailId"
+            placeholder="e.g., campaign-2024-winter"
+          />
+        </UFormField>
 
-      <UFormField label="Subject" :error="errors.subject">
-        <UInput
-          v-model="form.subject"
-          placeholder="Email subject line"
-        />
-      </UFormField>
-    </div>
+        <UFormField label="Subject" :error="errors.subject">
+          <UInput
+            v-model="form.subject"
+            placeholder="Email subject line"
+          />
+        </UFormField>
+      </div>
+    </template>
 
     <template #footer>
       <div class="flex justify-end gap-2">

@@ -143,33 +143,35 @@ async function setEmailId(campaign: string) {
         </div>
       </template>
 
-      <div class="space-y-4 p-4">
-        <p class="text-sm text-gray-500">
-          Choose which utm_campaign value should be used as the Email ID for tracking.
-        </p>
+      <template #body>
+        <div class="space-y-4">
+          <p class="text-sm text-gray-500">
+            Choose which utm_campaign value should be used as the Email ID for tracking.
+          </p>
 
-        <div class="space-y-2">
-          <label class="text-sm font-medium">Available Campaigns:</label>
           <div class="space-y-2">
-            <div
-              v-for="campaign in campaignData.availableCampaigns"
-              :key="campaign"
-              class="flex items-center gap-2"
-            >
-              <input
-                :id="`campaign-${campaign}`"
-                v-model="selectedCampaign"
-                type="radio"
-                :value="campaign"
-                class="h-4 w-4"
-              />
-              <label :for="`campaign-${campaign}`" class="text-sm font-mono">
-                {{ campaign }}
-              </label>
+            <label class="text-sm font-medium">Available Campaigns:</label>
+            <div class="space-y-2">
+              <div
+                v-for="campaign in campaignData.availableCampaigns"
+                :key="campaign"
+                class="flex items-center gap-2"
+              >
+                <input
+                  :id="`campaign-${campaign}`"
+                  v-model="selectedCampaign"
+                  type="radio"
+                  :value="campaign"
+                  class="h-4 w-4"
+                />
+                <label :for="`campaign-${campaign}`" class="text-sm font-mono">
+                  {{ campaign }}
+                </label>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </template>
 
       <template #footer>
         <div class="flex justify-end gap-2">

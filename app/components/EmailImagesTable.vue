@@ -97,7 +97,7 @@ const columns: TableColumn<Image>[] = [
 </script>
 
 <template>
-  <UCard v-if="images.length > 0">
+  <UCard>
     <template #header>
       <div>
         <h2 class="text-xl font-semibold">Images</h2>
@@ -105,7 +105,19 @@ const columns: TableColumn<Image>[] = [
       </div>
     </template>
 
-    <UTable :columns="columns" :data="images" />
+    <!-- Images Table -->
+    <div v-if="images.length > 0">
+      <UTable :columns="columns" :data="images" />
+    </div>
+
+    <!-- Empty State -->
+    <div v-else class="text-center py-8">
+      <UIcon name="i-lucide-image" class="mx-auto h-12 w-12 text-gray-400" />
+      <h3 class="mt-4 text-lg font-medium text-gray-400">No Images Found</h3>
+      <p class="mt-2 text-gray-500">
+        This email contains no images, or hasn't been analyzed yet.
+      </p>
+    </div>
   </UCard>
 
   <!-- Edit Image Dialog -->

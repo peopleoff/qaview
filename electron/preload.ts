@@ -11,6 +11,17 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onBrowserInstallProgress: (callback: (progress: any) => void) => {
     ipcRenderer.on("browser:installProgress", (_event, progress) => callback(progress));
   },
+  onAnalysisProgress: (callback: (progress: {
+    stage: 'parsing' | 'screenshots' | 'links' | 'images' | 'complete';
+    message: string;
+    current?: number;
+    total?: number;
+  }) => void) => {
+    ipcRenderer.on("email:analysisProgress", (_event, progress) => callback(progress));
+  },
+  removeAnalysisProgressListener: () => {
+    ipcRenderer.removeAllListeners("email:analysisProgress");
+  },
 
   // Email operations
   getEmails: () => ipcRenderer.invoke("db:getEmails"),

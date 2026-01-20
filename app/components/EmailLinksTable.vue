@@ -120,7 +120,7 @@ const columns: TableColumn<Link>[] = [
 </script>
 
 <template>
-  <UCard v-if="links.length > 0">
+  <UCard>
     <template #header>
       <div>
         <h2 class="text-xl font-semibold">Links</h2>
@@ -128,7 +128,19 @@ const columns: TableColumn<Link>[] = [
       </div>
     </template>
 
-    <UTable :columns="columns" :data="links" />
+    <!-- Links Table -->
+    <div v-if="links.length > 0">
+      <UTable :columns="columns" :data="links" />
+    </div>
+
+    <!-- Empty State -->
+    <div v-else class="text-center py-8">
+      <UIcon name="i-lucide-link" class="mx-auto h-12 w-12 text-gray-400" />
+      <h3 class="mt-4 text-lg font-medium text-gray-400">No Links Found</h3>
+      <p class="mt-2 text-gray-500">
+        This email contains no links, or hasn't been analyzed yet.
+      </p>
+    </div>
   </UCard>
 
   <!-- Edit Link Dialog -->

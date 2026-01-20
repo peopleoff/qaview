@@ -134,51 +134,53 @@ async function handleSubmit() {
       </div>
     </template>
 
-    <div class="space-y-4 p-4">
-      <UFormField label="Alt Text" :error="errors.alt">
-        <UInput
-          v-model="form.alt"
-          placeholder="Enter alt text"
-        />
-      </UFormField>
-
-      <UFormField label="Source URL" :error="errors.src">
-        <UInput
-          v-model="form.src"
-          placeholder="Enter image URL"
-        />
-      </UFormField>
-
-      <div class="grid grid-cols-2 gap-4">
-        <UFormField label="Width" :error="errors.width">
+    <template #body>
+      <div class="space-y-4">
+        <UFormField label="Alt Text" :error="errors.alt">
           <UInput
-            v-model.number="form.width"
-            type="number"
-            placeholder="Width"
-            min="1"
+            v-model="form.alt"
+            placeholder="Enter alt text"
           />
         </UFormField>
 
-        <UFormField label="Height" :error="errors.height">
+        <UFormField label="Source URL" :error="errors.src">
           <UInput
-            v-model.number="form.height"
-            type="number"
-            placeholder="Height"
-            min="1"
+            v-model="form.src"
+            placeholder="Enter image URL"
           />
         </UFormField>
-      </div>
 
-      <!-- Image Preview -->
-      <div v-if="image?.src" class="space-y-2">
-        <label class="text-sm font-medium">Current Image</label>
-        <img
-          :src="image.src"
-          :alt="image.alt || 'Image preview'"
-          class="max-w-full h-32 object-contain border rounded-lg"
-        />
+        <div class="grid grid-cols-2 gap-4">
+          <UFormField label="Width" :error="errors.width">
+            <UInput
+              v-model.number="form.width"
+              type="number"
+              placeholder="Width"
+              min="1"
+            />
+          </UFormField>
+
+          <UFormField label="Height" :error="errors.height">
+            <UInput
+              v-model.number="form.height"
+              type="number"
+              placeholder="Height"
+              min="1"
+            />
+          </UFormField>
+        </div>
+
+        <!-- Image Preview -->
+        <div v-if="image?.src" class="space-y-2">
+          <label class="text-sm font-medium">Current Image</label>
+          <img
+            :src="image.src"
+            :alt="image.alt || 'Image preview'"
+            class="max-w-full h-32 object-contain border rounded-lg"
+          />
+        </div>
       </div>
-    </div>
+    </template>
 
     <template #footer>
       <div class="flex justify-end gap-2">

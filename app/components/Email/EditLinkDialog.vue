@@ -145,48 +145,50 @@ async function handleSubmit() {
       </div>
     </template>
 
-    <div class="space-y-4 p-4">
-      <UFormField label="Link Text" :error="errors.text">
-        <UInput
-          v-model="form.text"
-          placeholder="Enter link text"
-        />
-      </UFormField>
+    <template #body>
+      <div class="space-y-4">
+        <UFormField label="Link Text" :error="errors.text">
+          <UInput
+            v-model="form.text"
+            placeholder="Enter link text"
+          />
+        </UFormField>
 
-      <UFormField label="Original URL" :error="errors.url">
-        <UInput
-          v-model="form.url"
-          placeholder="Enter original URL"
-        />
-      </UFormField>
+        <UFormField label="Original URL" :error="errors.url">
+          <UInput
+            v-model="form.url"
+            placeholder="Enter original URL"
+          />
+        </UFormField>
 
-      <UFormField label="Final URL" :error="errors.finalUrl">
-        <UInput
-          v-model="form.finalUrl"
-          placeholder="Enter final URL (after redirects)"
-        />
-      </UFormField>
+        <UFormField label="Final URL" :error="errors.finalUrl">
+          <UInput
+            v-model="form.finalUrl"
+            placeholder="Enter final URL (after redirects)"
+          />
+        </UFormField>
 
-      <UFormField label="Status Code" :error="errors.status">
-        <UInput
-          v-model.number="form.status"
-          type="number"
-          placeholder="HTTP status code"
-          min="0"
-          max="599"
-        />
-      </UFormField>
+        <UFormField label="Status Code" :error="errors.status">
+          <UInput
+            v-model.number="form.status"
+            type="number"
+            placeholder="HTTP status code"
+            min="0"
+            max="599"
+          />
+        </UFormField>
 
-      <!-- Screenshot Preview -->
-      <div v-if="screenshotPreview" class="space-y-2">
-        <label class="text-sm font-medium">Current Screenshot</label>
-        <img
-          :src="screenshotPreview"
-          alt="Link destination screenshot"
-          class="max-w-full h-32 object-contain border rounded-lg"
-        />
+        <!-- Screenshot Preview -->
+        <div v-if="screenshotPreview" class="space-y-2">
+          <label class="text-sm font-medium">Current Screenshot</label>
+          <img
+            :src="screenshotPreview"
+            alt="Link destination screenshot"
+            class="max-w-full h-32 object-contain border rounded-lg"
+          />
+        </div>
       </div>
-    </div>
+    </template>
 
     <template #footer>
       <div class="flex justify-end gap-2">

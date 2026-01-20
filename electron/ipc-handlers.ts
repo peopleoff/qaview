@@ -1,11 +1,11 @@
-import { ipcMain, dialog, app } from "electron";
+import { ipcMain, dialog, app, BrowserWindow } from "electron";
 import { db, schema } from "../lib/db";
 import { eq } from "drizzle-orm";
 import { readFile, mkdir, writeFile, copyFile, rm } from "fs/promises";
 import { join, basename, dirname } from "path";
 import { pathToFileURL } from "url";
 import { simpleParser } from "mailparser";
-import { analyzeEmailContent } from "./utils/email-analyzer";
+import { analyzeEmailContent, AnalysisProgressCallback } from "./utils/email-analyzer";
 import { BrowserManager } from "./utils/browser-manager";
 import { generatePdfReport, generatePdfPreviewHtml } from "./utils/pdf-generator";
 import { checkSpelling } from "./utils/spell-checker";
@@ -24,9 +24,12 @@ export function setupIPCHandlers() {
   // ==================== Browser Management ====================
   ipcMain.handle("browser:isInstalled", async () => {
     try {
+      console.log("[IPC] browser:isInstalled called");
       const installed = browserManager.isBrowserInstalled();
+      console.log("[IPC] browser:isInstalled result:", installed);
       return { success: true, data: installed };
     } catch (error: any) {
+      console.error("[IPC] browser:isInstalled error:", error);
       return { success: false, error: error.message };
     }
   });
@@ -566,8 +569,16 @@ export function setupIPCHandlers() {
     }
   });
 
-  ipcMain.handle("email:analyze", async (_event, emailId: number) => {
+  ipcMain.handle("email:analyze", async (event, emailId: number) => {
     try {
+      // Get the window to send progress updates
+      const win = BrowserWindow.fromWebContents(event.sender);
+
+      // Progress callback to send updates to renderer
+      const onProgress: AnalysisProgressCallback = (progress) => {
+        win?.webContents.send("email:analysisProgress", progress);
+      };
+
       // Get email from database
       const email = await db.query.emails.findFirst({
         where: eq(schema.emails.id, emailId),
@@ -578,6 +589,7 @@ export function setupIPCHandlers() {
       }
 
       // Read and parse email file
+      onProgress({ stage: 'parsing', message: 'Parsing email file...' });
       const fileContent = await readFile(email.filePath);
       const parsed = await simpleParser(fileContent);
 
@@ -588,7 +600,7 @@ export function setupIPCHandlers() {
       }
 
       // Analyze email with Playwright
-      const analysis = await analyzeEmailContent(emailId, htmlContent);
+      const analysis = await analyzeEmailContent(emailId, htmlContent, onProgress);
 
       // Extract subject from parsed email
       const subject = parsed.subject || null;
@@ -653,6 +665,7 @@ export function setupIPCHandlers() {
       }
 
       // Run spell check on email HTML
+      onProgress({ stage: 'parsing', message: 'Running spell check...' });
       let spellErrorsCount = 0;
       try {
         const spellCheckResult = await checkSpelling(htmlContent);

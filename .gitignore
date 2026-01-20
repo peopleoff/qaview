@@ -39,3 +39,5 @@ dist-electron/
 
 # Build artifacts
 /dist/
+
+.claude/

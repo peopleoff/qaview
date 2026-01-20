@@ -28,11 +28,22 @@ function parseUtmParams(url: string): UtmParams {
 }
 
 /**
+ * Progress callback type for analysis stages
+ */
+export type AnalysisProgressCallback = (progress: {
+  stage: 'parsing' | 'screenshots' | 'links' | 'images' | 'complete';
+  message: string;
+  current?: number;
+  total?: number;
+}) => void;
+
+/**
  * Analyze email content with Playwright
  */
 export async function analyzeEmailContent(
   emailId: number,
-  htmlContent: string
+  htmlContent: string,
+  onProgress?: AnalysisProgressCallback
 ): Promise<EmailAnalysisResult> {
   const screenshotManager = new ScreenshotManager();
   const emailDir = await screenshotManager.createEmailScreenshotDir(emailId);
@@ -42,13 +53,17 @@ export async function analyzeEmailContent(
   let browser: Browser | null = null;
 
   try {
-    // Launch browser
-    browser = await chromium.launch({ headless: true });
+    onProgress?.({ stage: 'parsing', message: 'Loading email content...' });
+
+    // Launch browser (visible to user so they can see links being clicked)
+    browser = await chromium.launch({ headless: false });
     const context = await browser.newContext();
     const page = await context.newPage();
 
     // Load email HTML
     await page.setContent(htmlContent, { waitUntil: "networkidle" });
+
+    onProgress?.({ stage: 'screenshots', message: 'Taking screenshots...' });
 
     // Take desktop screenshot (800px width)
     await page.setViewportSize({ width: 800, height: 600 });
@@ -67,12 +82,24 @@ export async function analyzeEmailContent(
       })
     );
     const links: AnalyzedLink[] = [];
+    const totalLinks = linkElements.filter(l => l.url && !l.url.startsWith("data:") && !l.url.startsWith("mailto:")).length;
 
     for (let i = 0; i < linkElements.length; i++) {
       const link = linkElements[i];
       const href = link.url;
 
       if (!href) continue;
+
+      // Report progress for non-skipped links
+      if (!href.startsWith("data:") && !href.startsWith("mailto:")) {
+        const currentLinkIndex = links.filter(l => l.status !== null).length + 1;
+        onProgress?.({
+          stage: 'links',
+          message: `Checking link ${currentLinkIndex} of ${totalLinks}`,
+          current: currentLinkIndex,
+          total: totalLinks
+        });
+      }
 
       const analyzedLink: AnalyzedLink = {
         text: link.title || "",
@@ -199,11 +226,21 @@ export async function analyzeEmailContent(
 
     await context.close();
 
-    // Validate images with separate headless browser for efficiency
+    // Validate images with separate headless browser
+    onProgress?.({ stage: 'images', message: 'Validating images...', current: 0, total: images.length });
     const imageBrowser = await chromium.launch({ headless: true });
 
     try {
-      for (const image of images) {
+      for (let i = 0; i < images.length; i++) {
+        const image = images[i];
+
+        onProgress?.({
+          stage: 'images',
+          message: `Checking image ${i + 1} of ${images.length}`,
+          current: i + 1,
+          total: images.length
+        });
+
         // Handle data URLs with default status
         if (image.src.startsWith("data:")) {
           image.status = 200;
@@ -223,6 +260,8 @@ export async function analyzeEmailContent(
     } finally {
       await imageBrowser.close();
     }
+
+    onProgress?.({ stage: 'complete', message: 'Analysis complete!' });
 
     return {
       links,

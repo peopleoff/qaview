@@ -236,25 +236,11 @@ const columns: TableColumn<Email>[] = [
 </script>
 
 <template>
-  <div class="min-h-screen bg-background">
-    <div class="container mx-auto py-8 px-4">
-      <!-- Header -->
-      <div class="mb-8">
-        <h1 class="text-4xl font-bold mb-2">QAView</h1>
-        <p class="text-muted text-lg">Email quality assurance analysis tool</p>
-      </div>
-
-      <!-- Main Card -->
-      <UCard>
+  <div class="space-y-6">
+    <!-- Main Card -->
+    <UCard>
         <template #header>
-          <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold">Email History</h2>
-            <UButton
-              icon="i-lucide-upload"
-              label="Upload Email"
-              @click="handleUpload"
-            />
-          </div>
+          <h2 class="text-xl font-semibold">Email History</h2>
         </template>
 
         <!-- Loading State -->
@@ -300,7 +286,6 @@ const columns: TableColumn<Email>[] = [
             />
           </div>
         </template>
-      </UModal>
-    </div>
+    </UModal>
   </div>
 </template>
