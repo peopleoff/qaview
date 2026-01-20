@@ -28,8 +28,8 @@
   // GitHub Releases publishing
   publish: {
     provider: "github",
-    owner: "ruslanbelyy",
-    repo: "qaview-desktop",
+    owner: "peopleoff",
+    repo: "qaview",
     releaseType: "release"
   },
 

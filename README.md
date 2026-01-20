@@ -17,7 +17,7 @@ Email QA and analysis tool for marketing teams. Analyzes email files (.eml, .htm
 
 ### Download from GitHub Releases
 
-Download the latest version for your platform from [GitHub Releases](https://github.com/ruslanbelyy/qaview-desktop/releases):
+Download the latest version for your platform from [GitHub Releases](https://github.com/peopleoff/qaview/releases):
 
 | Platform | File |
 |----------|------|
