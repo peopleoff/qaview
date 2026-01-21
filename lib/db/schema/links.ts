@@ -10,7 +10,6 @@ export const links = sqliteTable("links", {
   text: text("text"),
   url: text("url"),
   status: integer("status"),
-  screenshotUrl: text("screenshot_url"),
   redirectChain: text("redirect_chain", { mode: "json" }),
   finalUrl: text("final_url"),
   utmParams: text("utm_params", { mode: "json" }),

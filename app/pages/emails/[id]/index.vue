@@ -40,7 +40,6 @@ const analysisProgress = ref<{
 // Data URLs for screenshots
 const screenshotDesktopDataUrl = ref<string | null>(null)
 const screenshotMobileDataUrl = ref<string | null>(null)
-const screenshotDataUrl = ref<string | null>(null)
 
 // Export validation computed properties
 const incompleteChecklistItems = computed(() =>
@@ -93,13 +92,6 @@ async function fetchEmailData() {
       const mobileResult = await db.getImageData(result.data.screenshotMobileUrl)
       if (mobileResult.success) {
         screenshotMobileDataUrl.value = mobileResult.data ?? null
-      }
-    }
-
-    if (result.data.screenshotUrl) {
-      const screenshotResult = await db.getImageData(result.data.screenshotUrl)
-      if (screenshotResult.success) {
-        screenshotDataUrl.value = screenshotResult.data ?? null
       }
     }
   }
@@ -400,7 +392,7 @@ onMounted(() => {
         </UCard>
 
         <!-- Preview Card -->
-        <UCard v-if="email.analyzed && (screenshotDesktopDataUrl || screenshotMobileDataUrl || screenshotDataUrl)">
+        <UCard v-if="email.analyzed && (screenshotDesktopDataUrl || screenshotMobileDataUrl)">
           <template #header>
             <h2 class="text-xl font-semibold">Preview</h2>
           </template>
@@ -443,16 +435,6 @@ onMounted(() => {
               </div>
             </template>
           </UTabs>
-
-          <!-- Fallback Screenshot (if no desktop/mobile specific) -->
-          <div v-else-if="screenshotDataUrl" class="text-center py-4">
-            <img
-              :src="screenshotDataUrl"
-              alt="Email Preview"
-              class="max-w-full h-auto border border-gray-300 rounded-lg shadow-sm mx-auto cursor-pointer hover:opacity-90 transition-opacity"
-              @click="openImageModal(screenshotDataUrl)"
-            />
-          </div>
         </UCard>
 
 

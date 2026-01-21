@@ -9,6 +9,44 @@ import { ScreenshotManager } from "./screenshot-manager";
 import { getChromiumExecutablePath } from "./browser-manager";
 
 /**
+ * Patterns for identifying tracking pixels by URL
+ */
+const TRACKING_PIXEL_PATTERNS = {
+  // Known tracking pixel domains
+  domains: [
+    'beacon.krxd.net',
+  ],
+  // URL path patterns that indicate tracking
+  paths: [
+    '/open.aspx',    // SFMC open tracking
+    '/1x1_',         // Explicit 1x1 tracking pixels
+  ],
+};
+
+/**
+ * Check if a URL is a known tracking pixel
+ */
+function isTrackingPixel(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+
+    // Check domain blocklist
+    if (TRACKING_PIXEL_PATTERNS.domains.some(d => parsed.hostname.includes(d))) {
+      return true;
+    }
+
+    // Check path patterns
+    if (TRACKING_PIXEL_PATTERNS.paths.some(p => parsed.pathname.toLowerCase().includes(p.toLowerCase()))) {
+      return true;
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Parse UTM parameters from a URL
  */
 function parseUtmParams(url: string): UtmParams {
@@ -203,6 +241,7 @@ export async function analyzeEmailContent(
       const width = await element.getAttribute("width");
       const height = await element.getAttribute("height");
 
+
       if (!src) continue;
 
       // Filter out tracking pixels (1x1 images)
@@ -215,6 +254,11 @@ export async function analyzeEmailContent(
         (!widthNum && heightNum === 1)
       ) {
         continue; // Skip tracking pixels
+      }
+
+      // Filter out URL-based tracking pixels (SFMC, Krux, etc.)
+      if (isTrackingPixel(src)) {
+        continue;
       }
 
       const analyzedImage: AnalyzedImage = {

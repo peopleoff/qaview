@@ -32,6 +32,11 @@ export default defineNuxtConfig({
   modules: ['@nuxt/ui', 'nuxt-mcp', 'nuxt-electron'],
   css: ['~/assets/css/main.css'],
   ssr: false,
+  vite: {
+    define: {
+      __APP_VERSION__: JSON.stringify(pkg.version),
+    },
+  },
   nitro: {
     static: true,
   },

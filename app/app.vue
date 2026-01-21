@@ -17,6 +17,17 @@
         </template>
       </UHeader>
 
+      <UBanner
+        v-if="updateAvailable"
+        :id="`update-${updateAvailable.version}`"
+        icon="i-lucide-download"
+        :title="`Version ${updateAvailable.version} is available`"
+        :to="updateAvailable.url"
+        target="_blank"
+        color="info"
+        close
+      />
+
       <UMain>
         <UContainer class="py-8">
           <NuxtPage />
@@ -36,6 +47,7 @@ import type { BreadcrumbItem } from '@nuxt/ui'
 
 const route = useRoute()
 const { checkBrowserInstalled, ensureBrowserInstalled } = useBrowserSetup()
+const { updateAvailable, checkForUpdates } = useUpdateChecker()
 
 // Dynamic breadcrumbs based on current route
 const breadcrumbs = computed<BreadcrumbItem[]>(() => {
@@ -60,6 +72,8 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => {
 // Check browser installation only once per app launch
 // Use a flag stored in sessionStorage to prevent repeated checks
 onMounted(async () => {
+  // Check for updates in background
+  checkForUpdates()
   // Skip if we already checked this session
   if (sessionStorage.getItem('browser-check-done') === 'true') {
     return

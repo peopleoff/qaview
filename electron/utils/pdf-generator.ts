@@ -209,19 +209,19 @@ export async function generatePdfReport(
     ? await imageToDataUrl(emailData.screenshotMobileUrl, userDataPath)
     : '';
 
-  // Convert link screenshots to data URLs
+  // Convert link screenshots to data URLs (use string keys for Handlebars lookup compatibility)
   const linkScreenshots: Record<string, string> = {};
   for (const link of emailData.links) {
     if (link.screenshotPath) {
-      linkScreenshots[link.id] = await imageToDataUrl(link.screenshotPath, userDataPath);
+      linkScreenshots[String(link.id)] = await imageToDataUrl(link.screenshotPath, userDataPath);
     }
   }
 
-  // Convert attachment images to data URLs
+  // Convert attachment images to data URLs (use string keys for Handlebars lookup compatibility)
   const attachmentUrls: Record<string, string> = {};
   for (const attachment of emailData.attachments || []) {
     if (attachment.mimeType?.startsWith('image/') && attachment.path) {
-      attachmentUrls[attachment.id] = await imageToDataUrl(attachment.path, userDataPath);
+      attachmentUrls[String(attachment.id)] = await imageToDataUrl(attachment.path, userDataPath);
     }
   }
 
@@ -382,19 +382,19 @@ export async function generatePdfPreviewHtml(
     ? await imageToDataUrl(emailData.screenshotMobileUrl, userDataPath)
     : '';
 
-  // Convert link screenshots to data URLs
+  // Convert link screenshots to data URLs (use string keys for Handlebars lookup compatibility)
   const linkScreenshots: Record<string, string> = {};
   for (const link of emailData.links) {
     if (link.screenshotPath) {
-      linkScreenshots[link.id] = await imageToDataUrl(link.screenshotPath, userDataPath);
+      linkScreenshots[String(link.id)] = await imageToDataUrl(link.screenshotPath, userDataPath);
     }
   }
 
-  // Convert attachment images to data URLs
+  // Convert attachment images to data URLs (use string keys for Handlebars lookup compatibility)
   const attachmentUrls: Record<string, string> = {};
   for (const attachment of emailData.attachments || []) {
     if (attachment.mimeType?.startsWith('image/') && attachment.path) {
-      attachmentUrls[attachment.id] = await imageToDataUrl(attachment.path, userDataPath);
+      attachmentUrls[String(attachment.id)] = await imageToDataUrl(attachment.path, userDataPath);
     }
   }
 

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { h, resolveComponent } from 'vue'
+import { h, resolveComponent, ref, watch } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import type { Link, UtmParams } from '@@/lib/db/schema/links'
 
@@ -15,8 +15,29 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
+const db = useDatabase()
 const UBadge = resolveComponent('UBadge')
 const UButton = resolveComponent('UButton')
+
+// Screenshot state - maps link.id to base64 data URL
+const linkScreenshots = ref<Map<number, string>>(new Map())
+
+// Load screenshots for all links with screenshotPath
+async function loadLinkScreenshots() {
+  const newScreenshots = new Map<number, string>()
+  for (const link of props.links) {
+    if (link.screenshotPath) {
+      const result = await db.getImageData(link.screenshotPath)
+      if (result.success && result.data) {
+        newScreenshots.set(link.id, result.data)
+      }
+    }
+  }
+  linkScreenshots.value = newScreenshots
+}
+
+// Load screenshots when links change
+watch(() => props.links, loadLinkScreenshots, { immediate: true })
 
 // Edit dialog state
 const editDialogOpen = ref(false)
@@ -90,17 +111,17 @@ const columns: TableColumn<Link>[] = [
     }
   },
   {
-    accessorKey: 'screenshotUrl',
+    accessorKey: 'screenshotPath',
     header: 'Screenshot',
     cell: ({ row }) => {
-      const screenshotUrl = row.getValue('screenshotUrl') as string | null
-      if (!screenshotUrl) return h('span', { class: 'text-sm text-gray-400' }, ['-'])
+      const dataUrl = linkScreenshots.value.get(row.original.id)
+      if (!dataUrl) return h('span', { class: 'text-sm text-gray-400' }, ['-'])
 
       return h('img', {
-        src: screenshotUrl,
+        src: dataUrl,
         alt: 'Link Screenshot',
         class: 'w-12 h-12 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity',
-        onClick: () => emit('openImage', screenshotUrl)
+        onClick: () => emit('openImage', dataUrl)
       })
     }
   },

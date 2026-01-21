@@ -14,7 +14,6 @@ export const emails = sqliteTable("emails", {
   filePath: text("file_path").notNull(),
   subject: text("subject"),
   analyzed: integer("analyzed", { mode: "boolean" }).default(false),
-  screenshotUrl: text("screenshot_url"),
   screenshotDesktopUrl: text("screenshot_desktop_url"),
   screenshotMobileUrl: text("screenshot_mobile_url"),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
