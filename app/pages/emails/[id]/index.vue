@@ -439,7 +439,7 @@ onMounted(() => {
 
 
         <!-- Links Table -->
-        <EmailLinksTable :links="links" @open-image="openImageModal" @updated="handleLinkUpdated" />
+        <EmailLinksTable :links="links" :email-id="id" @open-image="openImageModal" @updated="handleLinkUpdated" />
 
         <!-- Images Table -->
         <EmailImagesTable :images="images" @open-image="openImageModal" @updated="handleImageUpdated" />
@@ -452,7 +452,7 @@ onMounted(() => {
         />
 
       <!-- Attachments -->
-        <EmailAttachments :email-id="id" />
+        <EmailAttachments :email-id="id" @change="attachments = $event" />
 
         <!-- QA Notes -->
         <QANotes :email-id="id" />

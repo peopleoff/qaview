@@ -40,6 +40,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   updateLink: (id: number, data: Partial<Link>) =>
     ipcRenderer.invoke("db:updateLink", id, data),
   createLinks: (links: NewLink[]) => ipcRenderer.invoke("db:createLinks", links),
+  reanalyzeLink: (linkId: number, emailId: number) =>
+    ipcRenderer.invoke("link:reanalyze", linkId, emailId),
 
   // Image operations
   getImages: (emailId: number) => ipcRenderer.invoke("db:getImages", emailId),

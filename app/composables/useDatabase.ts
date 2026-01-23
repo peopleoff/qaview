@@ -65,6 +65,11 @@ export const useDatabase = () => {
     return await api.updateLink(id, data);
   };
 
+  const reanalyzeLink = async (linkId: number, emailId: number): Promise<IpcResponse<Link>> => {
+    if (!api) return { success: false, error: "API not available" };
+    return await api.reanalyzeLink(linkId, emailId);
+  };
+
   // Image operations
   const getImages = async (emailId: number): Promise<IpcResponse<Image[]>> => {
     if (!api) return { success: false, error: "API not available" };
@@ -188,6 +193,7 @@ export const useDatabase = () => {
     // Link operations
     getLinks,
     updateLink,
+    reanalyzeLink,
 
     // Image operations
     getImages,

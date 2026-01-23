@@ -143,18 +143,18 @@ export const PDF_REPORT_TEMPLATE = `<!-- Header -->
 {{/if}}
 
 <!-- Attachments Section -->
-{{#if emailData.attachments.length}}
+{{#if attachments.length}}
 <div class="mb-8">
     <h2 class="text-xl font-semibold mb-4 text-gray-600">Attachments</h2>
     <div class="grid grid-cols-2 gap-4">
-        {{#each emailData.attachments}}
+        {{#each attachments}}
         <div class="border border-gray-200 rounded p-4 bg-gray-50">
             <div class="text-sm font-medium text-gray-700">{{filename}}</div>
             <div class="text-xs text-gray-500 mt-1">
                 <div><strong>Type:</strong> {{mimeType}}</div>
                 <div><strong>Size:</strong> {{formatFileSize size}}</div>
             </div>
-            {{#if (and mimeType (mimeType.startsWith "image/"))}}
+            {{#if isImage}}
             {{#if (lookup ../attachmentUrls id)}}
             <div class="mt-2">
                 <img src="{{lookup ../attachmentUrls id}}" alt="{{filename}}"

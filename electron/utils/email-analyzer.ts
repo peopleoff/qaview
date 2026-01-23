@@ -1,4 +1,4 @@
-import { chromium, Browser, Page } from "playwright";
+import { chromium, Browser, Page, BrowserContext, BrowserContextOptions } from "playwright";
 import {
   AnalyzedLink,
   AnalyzedImage,
@@ -7,6 +7,199 @@ import {
 } from "../types/email-analysis";
 import { ScreenshotManager } from "./screenshot-manager";
 import { getChromiumExecutablePath } from "./browser-manager";
+
+/**
+ * Browser context options that make the browser appear more like a real user
+ * This helps avoid "Access Denied" errors from bot detection systems
+ */
+const STEALTH_CONTEXT_OPTIONS: BrowserContextOptions = {
+  // Use a realistic Chrome user agent
+  userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+
+  // Set realistic viewport
+  viewport: { width: 1920, height: 1080 },
+
+  // Set screen size to match viewport
+  screen: { width: 1920, height: 1080 },
+
+  // Set locale and timezone
+  locale: 'en-US',
+  timezoneId: 'America/New_York',
+
+  // Add common browser headers
+  extraHTTPHeaders: {
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache',
+    'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+    'Sec-Ch-Ua-Mobile': '?0',
+    'Sec-Ch-Ua-Platform': '"macOS"',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'none',
+    'Sec-Fetch-User': '?1',
+    'Upgrade-Insecure-Requests': '1',
+  },
+
+  // Bypass CSP to avoid some blocking
+  bypassCSP: true,
+
+  // Ignore HTTPS errors (some redirects may have cert issues)
+  ignoreHTTPSErrors: true,
+};
+
+/**
+ * Analyze a single link by navigating to it and capturing data
+ * @param url - The URL to analyze
+ * @param emailId - The email ID for screenshot organization
+ * @param linkIndex - The index of the link (for screenshot naming)
+ * @returns Analyzed link data
+ */
+export async function analyzeSingleLink(
+  url: string,
+  emailId: number,
+  linkIndex: number
+): Promise<AnalyzedLink> {
+  const screenshotManager = new ScreenshotManager();
+  const emailDir = await screenshotManager.createEmailScreenshotDir(emailId);
+
+  let browser: Browser | null = null;
+
+  const analyzedLink: AnalyzedLink = {
+    text: null, // Text is preserved from existing link
+    url,
+    status: null,
+    redirectChain: null,
+    finalUrl: null,
+    utmParams: null,
+    screenshotPath: null,
+  };
+
+  // Skip data URLs and mailto links
+  if (url.startsWith("data:") || url.startsWith("mailto:")) {
+    return analyzedLink;
+  }
+
+  try {
+    // Launch browser (visible to user so they can see link being visited)
+    browser = await chromium.launch({
+      headless: false,
+      executablePath: getChromiumExecutablePath(),
+      args: [
+        '--disable-blink-features=AutomationControlled',
+        '--disable-features=IsolateOrigins,site-per-process',
+        '--no-sandbox',
+      ],
+    });
+    const context = await browser.newContext(STEALTH_CONTEXT_OPTIONS);
+
+    // Add stealth scripts to evade bot detection
+    await context.addInitScript(() => {
+      // Remove webdriver property
+      Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+
+      // Mock plugins array
+      Object.defineProperty(navigator, 'plugins', {
+        get: () => [
+          { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer' },
+          { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai' },
+          { name: 'Native Client', filename: 'internal-nacl-plugin' },
+        ],
+      });
+
+      // Mock languages
+      Object.defineProperty(navigator, 'languages', {
+        get: () => ['en-US', 'en'],
+      });
+
+      // Mock permissions
+      const originalQuery = window.navigator.permissions.query;
+      window.navigator.permissions.query = (parameters: PermissionDescriptor) =>
+        parameters.name === 'notifications'
+          ? Promise.resolve({ state: 'denied' } as PermissionStatus)
+          : originalQuery(parameters);
+
+      // Mock chrome runtime
+      (window as any).chrome = {
+        runtime: {},
+        loadTimes: function() {},
+        csi: function() {},
+        app: {},
+      };
+    });
+
+    const linkPage = await context.newPage();
+
+    const redirectChain: string[] = [];
+    let allUtmParams: UtmParams = {};
+
+    // Track redirects using request event (more reliable)
+    linkPage.on("request", (request) => {
+      const requestUrl = request.url();
+      if (request.isNavigationRequest() && request.redirectedFrom()) {
+        redirectChain.push(requestUrl);
+        // Accumulate UTM params from redirect chain
+        const params = parseUtmParams(requestUrl);
+        allUtmParams = { ...allUtmParams, ...params };
+      }
+    });
+
+    const response = await linkPage.goto(url, {
+      waitUntil: "load",
+      timeout: 15000,
+    }).catch(() => null);
+
+    // Wait for dynamic content to load (important for social media sites)
+    await linkPage.waitForTimeout(5000);
+
+    // Ensure DOM is ready
+    await linkPage.waitForLoadState("domcontentloaded").catch(() => {});
+
+    const finalUrl = linkPage.url();
+    redirectChain.push(finalUrl);
+
+    // Get final UTM params
+    const finalUtmParams = parseUtmParams(finalUrl);
+    allUtmParams = { ...allUtmParams, ...finalUtmParams };
+
+    // Get initial UTM params from original URL
+    const initialUtmParams = parseUtmParams(url);
+    allUtmParams = { ...initialUtmParams, ...allUtmParams };
+
+    analyzedLink.status = response?.status() || null;
+    analyzedLink.redirectChain = redirectChain.length > 0 ? redirectChain : null;
+    analyzedLink.finalUrl = finalUrl !== url ? finalUrl : null;
+    analyzedLink.utmParams = Object.keys(allUtmParams).length > 0 ? allUtmParams : null;
+
+    // Take screenshot of destination with timeout
+    const screenshotPath = screenshotManager.getLinkScreenshotPath(emailDir, linkIndex);
+    await linkPage.screenshot({
+      path: screenshotPath,
+      fullPage: true,
+      timeout: 10000
+    });
+    analyzedLink.screenshotPath = screenshotPath;
+
+    await linkPage.close();
+    await context.close();
+  } catch (error) {
+    console.error(`Failed to analyze link ${url}:`, error);
+    // Provide fallback data for failed analysis
+    analyzedLink.status = 0;
+    analyzedLink.redirectChain = [];
+    analyzedLink.finalUrl = url;
+    analyzedLink.utmParams = {};
+    analyzedLink.screenshotPath = "";
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
+  }
+
+  return analyzedLink;
+}
 
 /**
  * Patterns for identifying tracking pixels by URL
@@ -48,17 +241,34 @@ function isTrackingPixel(url: string): boolean {
 
 /**
  * Parse UTM parameters from a URL
+ * Handles both standard query params and params embedded in hash fragments
+ * (e.g., https://example.com/#/path?utm_source=test)
  */
 function parseUtmParams(url: string): UtmParams {
   try {
     const urlObj = new URL(url);
     const params: UtmParams = {};
 
+    // Parse standard query parameters
     urlObj.searchParams.forEach((value, key) => {
       if (key.startsWith("utm_")) {
         params[key] = value;
       }
     });
+
+    // Also check for query params embedded in hash fragment
+    // Some URLs use hash-based routing with params: example.com/#/path?utm_source=test
+    if (urlObj.hash && urlObj.hash.includes("?")) {
+      const hashQueryString = urlObj.hash.split("?")[1];
+      if (hashQueryString) {
+        const hashParams = new URLSearchParams(hashQueryString);
+        hashParams.forEach((value, key) => {
+          if (key.startsWith("utm_")) {
+            params[key] = value;
+          }
+        });
+      }
+    }
 
     return params;
   } catch {
@@ -97,9 +307,50 @@ export async function analyzeEmailContent(
     // Launch browser (visible to user so they can see links being clicked)
     browser = await chromium.launch({
       headless: false,
-      executablePath: getChromiumExecutablePath()
+      executablePath: getChromiumExecutablePath(),
+      args: [
+        '--disable-blink-features=AutomationControlled',
+        '--disable-features=IsolateOrigins,site-per-process',
+        '--no-sandbox',
+      ],
     });
-    const context = await browser.newContext();
+    const context = await browser.newContext(STEALTH_CONTEXT_OPTIONS);
+
+    // Add stealth scripts to evade bot detection
+    await context.addInitScript(() => {
+      // Remove webdriver property
+      Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+
+      // Mock plugins array
+      Object.defineProperty(navigator, 'plugins', {
+        get: () => [
+          { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer' },
+          { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai' },
+          { name: 'Native Client', filename: 'internal-nacl-plugin' },
+        ],
+      });
+
+      // Mock languages
+      Object.defineProperty(navigator, 'languages', {
+        get: () => ['en-US', 'en'],
+      });
+
+      // Mock permissions
+      const originalQuery = window.navigator.permissions.query;
+      window.navigator.permissions.query = (parameters: PermissionDescriptor) =>
+        parameters.name === 'notifications'
+          ? Promise.resolve({ state: 'denied' } as PermissionStatus)
+          : originalQuery(parameters);
+
+      // Mock chrome runtime
+      (window as any).chrome = {
+        runtime: {},
+        loadTimes: function() {},
+        csi: function() {},
+        app: {},
+      };
+    });
+
     const page = await context.newPage();
 
     // Load email HTML
@@ -141,6 +392,11 @@ export async function analyzeEmailContent(
           current: currentLinkIndex,
           total: totalLinks
         });
+
+        // Add random delay between link checks to appear more human-like (500ms-1500ms)
+        if (currentLinkIndex > 1) {
+          await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
+        }
       }
 
       const analyzedLink: AnalyzedLink = {
@@ -278,7 +534,11 @@ export async function analyzeEmailContent(
     onProgress?.({ stage: 'images', message: 'Validating images...', current: 0, total: images.length });
     const imageBrowser = await chromium.launch({
       headless: true,
-      executablePath: getChromiumExecutablePath()
+      executablePath: getChromiumExecutablePath(),
+      args: [
+        '--disable-blink-features=AutomationControlled',
+        '--no-sandbox',
+      ],
     });
 
     try {

@@ -5,6 +5,10 @@ const props = defineProps<{
   emailId: number;
 }>();
 
+const emit = defineEmits<{
+  (e: 'change', attachments: AttachmentWithData[]): void;
+}>();
+
 const { getAttachments, selectAttachments, createAttachments, deleteAttachment } = useDatabase();
 
 const attachments = ref<AttachmentWithData[]>([]);
@@ -18,6 +22,7 @@ async function loadAttachments() {
   const response = await getAttachments(props.emailId);
   if (response.success && response.data) {
     attachments.value = response.data;
+    emit('change', response.data);
   }
   isLoading.value = false;
 }

@@ -92,6 +92,12 @@ declare global {
       /** Create multiple link records */
       createLinks: (links: NewLink[]) => Promise<IpcResponse<Link[]>>;
 
+      /** Re-analyze a single link (refresh status, redirects, UTM params, screenshot) */
+      reanalyzeLink: (
+        linkId: number,
+        emailId: number
+      ) => Promise<IpcResponse<Link>>;
+
       // ==================== Image Operations ====================
       /** Get all images for an email */
       getImages: (emailId: number) => Promise<IpcResponse<Image[]>>;

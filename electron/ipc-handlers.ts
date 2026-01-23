@@ -5,7 +5,7 @@ import { readFile, mkdir, writeFile, copyFile, rm } from "fs/promises";
 import { join, basename, dirname } from "path";
 import { pathToFileURL } from "url";
 import { simpleParser } from "mailparser";
-import { analyzeEmailContent, AnalysisProgressCallback } from "./utils/email-analyzer";
+import { analyzeEmailContent, analyzeSingleLink, AnalysisProgressCallback } from "./utils/email-analyzer";
 import { BrowserManager, getChromiumExecutablePath } from "./utils/browser-manager";
 import { generatePdfReport, generatePdfPreviewHtml } from "./utils/pdf-generator";
 import { checkSpelling } from "./utils/spell-checker";
@@ -217,6 +217,38 @@ export function setupIPCHandlers() {
       const createdLinks = await db.insert(schema.links).values(links).returning();
       return { success: true, data: createdLinks };
     } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error) };
+    }
+  });
+
+  ipcMain.handle("link:reanalyze", async (_event, linkId: number, emailId: number) => {
+    try {
+      // 1. Fetch existing link to get URL
+      const [existingLink] = await db.select().from(schema.links).where(eq(schema.links.id, linkId));
+      if (!existingLink) {
+        return { success: false, error: "Link not found" };
+      }
+
+      // 2. Call analyzeSingleLink()
+      const result = await analyzeSingleLink(existingLink.url, emailId, linkId);
+
+      // 3. Update link record with new analysis data
+      const [updated] = await db
+        .update(schema.links)
+        .set({
+          status: result.status,
+          redirectChain: result.redirectChain,
+          finalUrl: result.finalUrl,
+          utmParams: result.utmParams,
+          screenshotPath: result.screenshotPath,
+          isEdited: 0, // Reset edited flag since it's fresh analysis
+        })
+        .where(eq(schema.links.id, linkId))
+        .returning();
+
+      return { success: true, data: updated };
+    } catch (error: unknown) {
+      console.error("Link re-analysis failed:", error);
       return { success: false, error: getErrorMessage(error) };
     }
   });
@@ -537,14 +569,11 @@ export function setupIPCHandlers() {
 
       // Create default checklist items
       const defaultChecklistItems = [
-        { id: "1", text: "Subject line is clear and accurate" },
-        { id: "2", text: "Preheader text is optimized" },
-        { id: "3", text: "All links are working correctly" },
-        { id: "4", text: "Images are displaying properly" },
-        { id: "5", text: "No spelling or grammar errors" },
-        { id: "6", text: "Email renders correctly in all clients" },
-        { id: "7", text: "Personalization tokens are correct" },
-        { id: "8", text: "Unsubscribe link is present and working" },
+        { id: "1", text: "Does every client design match Figma design" },
+        { id: "2", text: "Does every URL work and go to the expected place" },
+        { id: "3", text: "Are UTMs populating with expected values" },
+        { id: "4", text: "Is all personalization correct" },
+        { id: "5", text: "Validate the SMS/Email send logs for all values" },
       ];
 
       // Create email record in database

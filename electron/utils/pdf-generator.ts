@@ -36,8 +36,17 @@ interface QAChecklistSummary {
   status: 'Not Started' | 'In Progress' | 'Nearly Complete' | 'Complete';
 }
 
+interface AttachmentWithIsImage {
+  id: number;
+  filename: string;
+  mimeType: string | null;
+  size: number;
+  isImage: boolean;
+}
+
 interface PDFTemplateData {
   emailData: any;
+  attachments: AttachmentWithIsImage[];
   emailPreviewDataUrl: string;
   emailDesktopDataUrl: string;
   emailMobileDataUrl: string;
@@ -225,9 +234,19 @@ export async function generatePdfReport(
     }
   }
 
+  // Transform attachments with pre-computed isImage flag for Handlebars
+  const attachments: AttachmentWithIsImage[] = (emailData.attachments || []).map((attachment: any) => ({
+    id: attachment.id,
+    filename: attachment.filename,
+    mimeType: attachment.mimeType,
+    size: attachment.size,
+    isImage: attachment.mimeType?.startsWith('image/') ?? false,
+  }));
+
   // Prepare template data
   const templateData: PDFTemplateData = {
     emailData,
+    attachments,
     emailPreviewDataUrl: '',
     emailDesktopDataUrl,
     emailMobileDataUrl,
@@ -398,9 +417,19 @@ export async function generatePdfPreviewHtml(
     }
   }
 
+  // Transform attachments with pre-computed isImage flag for Handlebars
+  const attachments: AttachmentWithIsImage[] = (emailData.attachments || []).map((attachment: any) => ({
+    id: attachment.id,
+    filename: attachment.filename,
+    mimeType: attachment.mimeType,
+    size: attachment.size,
+    isImage: attachment.mimeType?.startsWith('image/') ?? false,
+  }));
+
   // Prepare template data
   const templateData: PDFTemplateData = {
     emailData,
+    attachments,
     emailPreviewDataUrl: '',
     emailDesktopDataUrl,
     emailMobileDataUrl,

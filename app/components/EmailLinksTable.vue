@@ -5,6 +5,7 @@ import type { Link, UtmParams } from '@@/lib/db/schema/links'
 
 interface Props {
   links: Link[]
+  emailId: number
 }
 
 interface Emits {
@@ -50,6 +51,37 @@ function openEditDialog(link: Link) {
 
 function handleLinkUpdated(link: Link) {
   emit('updated', link)
+}
+
+// Re-analyze dialog state
+const reanalyzeDialogOpen = ref(false)
+const linkToReanalyze = ref<Link | null>(null)
+const isReanalyzing = ref(false)
+
+function openReanalyzeDialog(link: Link) {
+  linkToReanalyze.value = link
+  reanalyzeDialogOpen.value = true
+}
+
+async function confirmReanalyze() {
+  if (!linkToReanalyze.value) return
+  isReanalyzing.value = true
+  try {
+    const result = await db.reanalyzeLink(linkToReanalyze.value.id, props.emailId)
+    if (result.success && result.data) {
+      // Reload the screenshot for the updated link
+      if (result.data.screenshotPath) {
+        const imgResult = await db.getImageData(result.data.screenshotPath)
+        if (imgResult.success && imgResult.data) {
+          linkScreenshots.value.set(result.data.id, imgResult.data)
+        }
+      }
+      emit('updated', result.data)
+      reanalyzeDialogOpen.value = false
+    }
+  } finally {
+    isReanalyzing.value = false
+  }
 }
 
 const columns: TableColumn<Link>[] = [
@@ -129,12 +161,22 @@ const columns: TableColumn<Link>[] = [
     id: 'actions',
     header: '',
     cell: ({ row }) => {
-      return h(UButton, {
-        icon: 'i-lucide-pencil',
-        variant: 'ghost',
-        size: 'xs',
-        onClick: () => openEditDialog(row.original)
-      })
+      return h('div', { class: 'flex gap-1' }, [
+        h(UButton, {
+          icon: 'i-lucide-refresh-cw',
+          variant: 'ghost',
+          size: 'xs',
+          title: 'Re-analyze link',
+          onClick: () => openReanalyzeDialog(row.original)
+        }),
+        h(UButton, {
+          icon: 'i-lucide-pencil',
+          variant: 'ghost',
+          size: 'xs',
+          title: 'Edit link',
+          onClick: () => openEditDialog(row.original)
+        })
+      ])
     }
   }
 ]
@@ -171,4 +213,32 @@ const columns: TableColumn<Link>[] = [
     @update:open="editDialogOpen = $event"
     @updated="handleLinkUpdated"
   />
+
+  <!-- Re-analyze Confirmation Dialog -->
+  <UModal v-model:open="reanalyzeDialogOpen">
+    <template #content>
+      <UCard>
+        <template #header>
+          <div class="flex items-center gap-2">
+            <UIcon name="i-lucide-refresh-cw" class="h-5 w-5" />
+            <span class="font-semibold">Re-analyze Link?</span>
+          </div>
+        </template>
+
+        <div class="space-y-3">
+          <p class="text-sm">This will re-fetch the link destination, update redirect chain, UTM parameters, and take a new screenshot.</p>
+          <p class="text-sm text-gray-500 truncate">{{ linkToReanalyze?.url }}</p>
+        </div>
+
+        <template #footer>
+          <div class="flex justify-end gap-2">
+            <UButton variant="ghost" @click="reanalyzeDialogOpen = false">Cancel</UButton>
+            <UButton color="primary" :loading="isReanalyzing" @click="confirmReanalyze">
+              Re-analyze
+            </UButton>
+          </div>
+        </template>
+      </UCard>
+    </template>
+  </UModal>
 </template>
