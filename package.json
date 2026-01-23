@@ -1,6 +1,6 @@
 {
   "name": "qaview",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Email QA and analysis tool for marketing teams",
   "author": "QAView",
   "type": "module",
