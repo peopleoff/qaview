@@ -4,6 +4,7 @@ import type { QAChecklistItem } from '@@/lib/db/schema/qaChecklist'
 interface Props {
   open: boolean
   incompleteItems: QAChecklistItem[]
+  totalChecklistItems: number
   hasSendLogs: boolean
 }
 
@@ -44,7 +45,7 @@ function handleConfirm() {
         <ul class="space-y-2">
           <li v-if="incompleteItems.length > 0" class="flex items-start gap-2 text-gray-700 dark:text-gray-300">
             <UIcon name="i-lucide-circle-x" class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-            <span>{{ incompleteItems.length }} of 8 QA checklist items incomplete</span>
+            <span>{{ incompleteItems.length }} of {{ totalChecklistItems }} QA checklist items incomplete</span>
           </li>
           <li v-if="!hasSendLogs" class="flex items-start gap-2 text-gray-700 dark:text-gray-300">
             <UIcon name="i-lucide-circle-x" class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />

@@ -363,9 +363,9 @@ onMounted(() => {
                 <h3 class="text-sm font-medium text-muted-foreground mb-1">Subject</h3>
                 <p class="text-lg font-medium">{{ email.subject || 'No subject' }}</p>
               </div>
-              <div class="break-all">
+              <div>
                 <h3 class="text-sm font-medium text-muted-foreground mb-1">Filename</h3>
-                <p class="text-lg font-medium">{{ email.filename }}</p>
+                <p class="text-lg font-medium truncate max-w-[300px]" :title="email.filename">{{ email.filename }}</p>
               </div>
             </div>
 
@@ -493,6 +493,7 @@ onMounted(() => {
     <ExportConfirmDialog
       :open="exportConfirmOpen"
       :incomplete-items="incompleteChecklistItems"
+      :total-checklist-items="qaChecklist.length"
       :has-send-logs="hasSendLogs"
       @update:open="exportConfirmOpen = $event"
       @confirm="handleExportConfirm"

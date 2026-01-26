@@ -149,7 +149,14 @@ const columns: TableColumn<Email>[] = [
         onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
       })
     },
-    enableSorting: true
+    enableSorting: true,
+    cell: ({ row }) => {
+      const filename = row.getValue('filename') as string | null
+      return h('span', {
+        title: filename || '',
+        class: 'block max-w-[300px] truncate'
+      }, filename || 'N/A')
+    }
   },
   {
     accessorKey: 'analyzed',
