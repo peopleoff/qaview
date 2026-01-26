@@ -1,4 +1,4 @@
-import { chromium, Browser, Page, BrowserContext, BrowserContextOptions } from "playwright";
+import { chromium, Browser, BrowserContextOptions } from "playwright";
 import {
   AnalyzedLink,
   AnalyzedImage,
@@ -17,10 +17,10 @@ const STEALTH_CONTEXT_OPTIONS: BrowserContextOptions = {
   userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
 
   // Set realistic viewport
-  viewport: { width: 1920, height: 1080 },
+  viewport: { width: 1040, height: 632 },
 
   // Set screen size to match viewport
-  screen: { width: 1920, height: 1080 },
+  screen: { width: 1040, height: 632 },
 
   // Set locale and timezone
   locale: 'en-US',
